@@ -78,29 +78,35 @@ impl Drop for Buffer {
     }
 }
 
-#[test]
-fn allocation() {
-    let mut context = crate::Context::new();
+#[cfg(test)]
+mod tests {
+    use crate::{ContextBuilder, ContextDisplay, Buffer, initialize};
+    #[test]
+    fn allocation() {
+        let context_builder = ContextBuilder::new().with_display(ContextDisplay::None);
+        let mut context = context_builder.build();
 
-    context.make_current().unwrap();
-    crate::initialize(|symbol| context.get_proc_address(symbol) as *const _);
+        context.make_current().unwrap();
+        initialize(|symbol| context.get_proc_address(symbol) as *const _);
 
-    let buffer = Buffer::allocate(12345);
-    assert_eq!(buffer.get_size(), 12345);
-}
+        let buffer = Buffer::allocate(12345);
+        assert_eq!(buffer.get_size(), 12345);
+    }
 
-#[test]
-fn from_data() {
-    let mut context = crate::Context::new();
+    #[test]
+    fn from_data() {
+        let context_builder = ContextBuilder::new().with_display(ContextDisplay::None);
+        let mut context = context_builder.build();
 
-    context.make_current().unwrap();
-    crate::initialize(|symbol| context.get_proc_address(symbol) as *const _);
+        context.make_current().unwrap();
+        initialize(|symbol| context.get_proc_address(symbol) as *const _);
 
-    let mut data_in = Vec::new();
-    for i in 0..10 { data_in.push(i as f32); }
+        let mut data_in = Vec::new();
+        for i in 0..10 { data_in.push(i as f32); }
 
-    let buffer = Buffer::from_data(&data_in);
-    let data_out = buffer.get_data();
+        let buffer = Buffer::from_data(&data_in);
+        let data_out = buffer.get_data();
 
-    assert_eq!(data_in, data_out);
+        assert_eq!(data_in, data_out);
+    }
 }

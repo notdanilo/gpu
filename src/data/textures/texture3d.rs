@@ -113,45 +113,52 @@ impl Texture for Texture3D {
     fn get_format(&self) -> &TextureFormat { &self.format }
 }
 
-#[test]
-fn allocation() {
-    let mut context = crate::Context::new();
+#[cfg(test)]
+mod tests {
+    use crate::{ContextBuilder, ContextDisplay, initialize, Texture, Texture3D, TextureFormat, ColorFormat, ComponentFormat};
 
-    context.make_current().unwrap();
-    crate::initialize(|symbol| context.get_proc_address(symbol) as *const _);
+    #[test]
+    fn allocation() {
+        let context_builder = ContextBuilder::new().with_display(ContextDisplay::None);
+        let mut context = context_builder.build();
 
-    let dimension = (111, 222, 333);
-    let texture = Texture3D::allocate(dimension, &TextureFormat(ColorFormat::RGBA, ComponentFormat::U8));
-    assert_eq!(texture.get_dimension(), dimension);
-}
+        context.make_current().unwrap();
+        initialize(|symbol| context.get_proc_address(symbol) as *const _);
 
-#[test]
-fn from_data() {
-    let mut context = crate::Context::new();
+        let dimension = (111, 222, 333);
+        let texture = Texture3D::allocate(dimension, &TextureFormat(ColorFormat::RGBA, ComponentFormat::U8));
+        assert_eq!(texture.get_dimension(), dimension);
+    }
 
-    context.make_current().unwrap();
-    crate::initialize(|symbol| context.get_proc_address(symbol) as *const _);
+    #[test]
+    fn from_data() {
+        let context_builder = ContextBuilder::new().with_display(ContextDisplay::None);
+        let mut context = context_builder.build();
 
-    let mut data_in : Vec<f32> = Vec::new();
-    let dimension = (8, 8, 8);
-    let components = 2;
-    for x in 0..dimension.0 {
-        for y in 0..dimension.1 {
-            for z in 0..dimension.2 {
-                for w in 1..(components+1) {
-                    data_in.push((w * (dimension.1 * (y * dimension.0 + x) + z)) as f32);
+        context.make_current().unwrap();
+        initialize(|symbol| context.get_proc_address(symbol) as *const _);
+
+        let mut data_in : Vec<f32> = Vec::new();
+        let dimension = (8, 8, 8);
+        let components = 2;
+        for x in 0..dimension.0 {
+            for y in 0..dimension.1 {
+                for z in 0..dimension.2 {
+                    for w in 1..(components+1) {
+                        data_in.push((w * (dimension.1 * (y * dimension.0 + x) + z)) as f32);
+                    }
                 }
             }
         }
+
+        let data_in_format = TextureFormat(ColorFormat::components(components), ComponentFormat::F32);
+        let texture = Texture3D::from_data(dimension, &data_in_format, &data_in, &data_in_format);
+
+        assert_eq!(components, texture.get_format().get_color_format().get_size());
+        assert_eq!(dimension, texture.get_dimension());
+
+        let data_out = texture.get_data();
+
+        assert_eq!(data_in, data_out);
     }
-
-    let data_in_format = TextureFormat(ColorFormat::components(components), ComponentFormat::F32);
-    let texture = Texture3D::from_data(dimension, &data_in_format, &data_in, &data_in_format);
-
-    assert_eq!(components, texture.get_format().get_color_format().get_size());
-    assert_eq!(dimension, texture.get_dimension());
-
-    let data_out = texture.get_data();
-
-    assert_eq!(data_in, data_out);
 }
