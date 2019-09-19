@@ -67,7 +67,7 @@ impl ContextBuilder {
             },
             ContextDisplay::None => {
                 glutin::ContextBuilder::new().with_vsync(self.vsync)
-                    .build_windowed(window_builder, &events_loop) // we need to use build_headless instead
+                    .build_windowed(window_builder, &events_loop) // the guideline for creating a headless context is: try build_headless, if it fails, fallback to hidden window
                     .unwrap()
             }
         };
