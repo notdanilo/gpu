@@ -5,7 +5,7 @@ use glutin::ContextTrait;
 
 pub enum ContextDisplay {
     None,
-    Fullscreen,
+    Screen,
     Window(String, usize, usize)
 }
 
@@ -20,7 +20,7 @@ impl ContextBuilder {
         Self {
             cursor: false,
             vsync: true,
-            display: ContextDisplay::Fullscreen
+            display: ContextDisplay::Screen
         }
     }
 
@@ -29,8 +29,8 @@ impl ContextBuilder {
         self
     }
 
-    pub fn cursor(mut self, show: bool) -> Self {
-        self.cursor = show;
+    pub fn cursor(mut self, cursor: bool) -> Self {
+        self.cursor = cursor;
         self
     }
 
@@ -48,7 +48,7 @@ impl ContextBuilder {
                 window_builder = window_builder.with_title(name)
                                                .with_dimensions(glutin::dpi::LogicalSize::new(*width as f64, *height as f64));
             },
-            ContextDisplay::Fullscreen => {
+            ContextDisplay::Screen => {
                 window_builder = window_builder.with_title("")
                                                .with_fullscreen(Some(events_loop.get_primary_monitor()));
             },
@@ -60,7 +60,7 @@ impl ContextBuilder {
         }
 
         let context = match self.display {
-            ContextDisplay::Window(_, _, _) | ContextDisplay::Fullscreen => {
+            ContextDisplay::Window(_, _, _) | ContextDisplay::Screen => {
                 glutin::ContextBuilder::new().with_vsync(self.vsync)
                     .build_windowed(window_builder, &events_loop)
                     .unwrap()
