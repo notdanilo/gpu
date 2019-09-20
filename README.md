@@ -1,5 +1,5 @@
 # gpu
-A minimalist GPGPU library
+An ergonomic GPU API
 
 ## Usage
 
