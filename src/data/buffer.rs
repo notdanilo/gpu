@@ -18,7 +18,7 @@ impl Buffer {
             gl::GenBuffers(1, &mut id);
         }
         Buffer {
-            id : id
+            id
         }
     }
 
@@ -73,7 +73,7 @@ impl Buffer {
 impl Drop for Buffer {
     fn drop(&mut self) {
         unsafe {
-            gl::DeleteBuffers(1, &mut self.id);
+            gl::DeleteBuffers(1, &self.get_id());
         }
     }
 }

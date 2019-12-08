@@ -11,7 +11,7 @@ pub enum ColorFormat {
 impl ColorFormat {
     pub fn components(components: usize) -> ColorFormat {
         match components {
-            0...1 => ColorFormat::R,
+            0..=1 => ColorFormat::R,
             2 => ColorFormat::RG,
             3 => ColorFormat::RGB,
             _ => ColorFormat::RGBA

@@ -47,7 +47,7 @@ impl RasterProgram {
         }
 
         Ok(Self {
-            id : id
+            id
         })
     }
 
@@ -66,7 +66,7 @@ impl RasterProgram {
 
 impl Drop for RasterProgram {
     fn drop(&mut self) {
-        unsafe { gl::DeleteProgram(self.id); }
+        unsafe { gl::DeleteProgram(self.get_id()); }
     }
 }
 

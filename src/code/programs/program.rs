@@ -12,7 +12,8 @@ pub trait Program {
             gl::BindBufferBase(gl::SHADER_STORAGE_BUFFER, index, buffer.get_id());
         }
     }
-    fn bind_texture(&mut self, texture: &Texture, sampler: &Sampler, index: u32) {
+    fn bind_texture(&mut self, texture: &dyn Texture, sampler: &Sampler, index:
+    u32) {
         unsafe {
             gl::ActiveTexture(gl::TEXTURE0 + index);
             gl::BindTexture(texture.get_type(), texture.get_id());
@@ -21,7 +22,7 @@ pub trait Program {
             gl::Uniform1i(index as i32, index as i32);
         }
     }
-    fn bind_image(&mut self, texture: &Texture, index: u32) {
+    fn bind_image(&mut self, texture: &dyn Texture, index: u32) {
         unsafe {
             gl::UseProgram(self.get_id());
             gl::ActiveTexture(gl::TEXTURE0 + index);

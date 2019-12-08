@@ -10,18 +10,19 @@ impl Resource for VertexArrayObject {
     fn get_id(&self) -> u32 { self.id }
 }
 
-impl VertexArrayObject {
-    pub fn new() -> VertexArrayObject {
+impl Default for VertexArrayObject {
+    fn default() -> Self {
         let mut id = 0;
         unsafe {
             gl::GenVertexArrays(1, &mut id);
         };
 
-        VertexArrayObject {
-            id : id,
-            vertices : 0
-        }
+        Self { id, vertices : 0 }
     }
+}
+
+impl VertexArrayObject {
+    pub fn new() -> Self { Default::default() }
 
     pub fn set_vertex_buffer(&mut self, buffer : &Buffer, index: u32, elements: u32) {
         unsafe {
@@ -50,7 +51,7 @@ impl VertexArrayObject {
 impl Drop for VertexArrayObject {
     fn drop(&mut self) {
         unsafe {
-            gl::DeleteVertexArrays(1, &mut self.id);
+            gl::DeleteVertexArrays(1, &self.get_id());
         }
     }
 }

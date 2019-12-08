@@ -20,7 +20,7 @@ impl Renderbuffer {
         }
 
         Self {
-            id : id
+            id
         }
     }
 }
@@ -28,7 +28,7 @@ impl Renderbuffer {
 impl Drop for Renderbuffer {
     fn drop(&mut self) {
         unsafe {
-            gl::DeleteRenderbuffers(1, &mut self.id);
+            gl::DeleteRenderbuffers(1, &self.get_id());
         }
     }
 }

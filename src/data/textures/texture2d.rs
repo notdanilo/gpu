@@ -18,7 +18,7 @@ impl Texture2D {
             gl::GenTextures(1, &mut id);
         }
         Self {
-            id : id,
+            id,
             format: TextureFormat::new(ColorFormat::RGBA, ComponentFormat::F32)
         }
     }
@@ -100,7 +100,7 @@ impl Texture for Texture2D {
 impl Drop for Texture2D {
     fn drop(&mut self) {
         unsafe {
-            gl::DeleteTextures(1, &mut self.id);
+            gl::DeleteTextures(1, &self.get_id());
         }
     }
 }

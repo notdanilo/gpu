@@ -34,7 +34,7 @@ impl ComputeProgram {
         }
 
         Ok(Self {
-            id : id
+            id
         })
     }
 

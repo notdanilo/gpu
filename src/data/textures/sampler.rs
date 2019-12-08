@@ -4,8 +4,8 @@ pub struct Sampler {
     id : u32
 }
 
-impl Sampler {
-    pub fn new() -> Self {
+impl Default for Sampler {
+    fn default() -> Self {
         let mut id = 0;
         unsafe {
             gl::GenSamplers(1, &mut id);
@@ -15,15 +15,19 @@ impl Sampler {
             gl::SamplerParameteri(id, gl::TEXTURE_MAG_FILTER, gl::NEAREST as i32);
         }
         Self {
-            id : id
+            id
         }
     }
+}
+
+impl Sampler {
+    pub fn new() -> Self { Default::default() }
 }
 
 impl Drop for Sampler {
     fn drop(&mut self) {
         unsafe {
-            gl::DeleteSamplers(1, &mut self.id);
+            gl::DeleteSamplers(1, &self.get_id());
         }
     }
 }

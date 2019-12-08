@@ -91,7 +91,7 @@ impl Framebuffer {
 impl Drop for Framebuffer {
     fn drop(&mut self) {
         unsafe {
-            gl::DeleteFramebuffers(1, &mut self.id);
+            gl::DeleteFramebuffers(1, &self.get_id());
         }
     }
 }

@@ -15,14 +15,18 @@ pub struct ContextBuilder {
     display: ContextDisplay
 }
 
-impl ContextBuilder {
-    pub fn new() -> Self {
+impl Default for ContextBuilder {
+    fn default() -> Self {
         Self {
             cursor: false,
             vsync: true,
             display: ContextDisplay::Screen
         }
     }
+}
+
+impl ContextBuilder {
+    pub fn new() -> Self { Default::default() }
 
     pub fn with_display(mut self, display: ContextDisplay) -> Self {
         self.display = display;
@@ -92,16 +96,15 @@ impl Context {
         let context = &mut self.context;
         let mut available = true;
         events_loop.poll_events(|event| {
-            match event {
-                glutin::Event::WindowEvent{ event, .. } => match event {
+                if let glutin::Event::WindowEvent{ event, .. } = event {
+                    match event {
                     glutin::WindowEvent::CloseRequested => available = false,
                     glutin::WindowEvent::Resized(logical_size) => {
                        let dpi_factor = context.get_hidpi_factor();
                        context.resize(logical_size.to_physical(dpi_factor));
                     },
                     _ => ()
-                },
-                _ => ()
+                }
             }
         });
         available

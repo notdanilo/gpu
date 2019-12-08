@@ -7,18 +7,22 @@ pub struct ClearProgram {
     stencil: i32
 }
 
-impl ClearProgram {
-    pub const COLOR: u32 = gl::COLOR_BUFFER_BIT;
-    pub const DEPTH: u32 = gl::DEPTH_BUFFER_BIT;
-    pub const STENCIL: u32 = gl::STENCIL_BUFFER_BIT;
-
-    pub fn new() -> ClearProgram {
-        ClearProgram {
+impl Default for ClearProgram {
+    fn default() -> Self {
+        Self {
             color: (0.0, 0.0, 0.0, 0.0),
             depth: 1.0, // is it default?
             stencil: 0 // is it default?
         }
     }
+}
+
+impl ClearProgram {
+    pub const COLOR: u32 = gl::COLOR_BUFFER_BIT;
+    pub const DEPTH: u32 = gl::DEPTH_BUFFER_BIT;
+    pub const STENCIL: u32 = gl::STENCIL_BUFFER_BIT;
+
+    pub fn new() -> Self { Default::default() }
 
     pub fn set_color(&mut self, color: (f32, f32, f32, f32)) { self.color = color; }
     pub fn get_color(&self) -> (f32, f32, f32, f32) { self.color }
