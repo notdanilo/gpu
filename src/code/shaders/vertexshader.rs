@@ -1,29 +1,32 @@
 use crate::code::shaders::shader::create_shader;
 use crate::Resource;
+use crate::Context;
+use glow::HasContext;
 
-pub struct VertexShader {
-    id : u32
+pub struct VertexShader<'context> {
+    id      : u32,
+    context : &'context Context
 }
 
-impl VertexShader {
-    pub fn new(source: &str) -> Result<Self, String> {
-        let id = create_shader(gl::VERTEX_SHADER, &source);
+impl<'context> VertexShader<'context> {
+    pub fn new(context:&'context Context, source: &str) -> Result<Self, String> {
+        let id = create_shader(context, glow::VERTEX_SHADER, source);
         match id {
-            Ok(id) => Ok(Self{ id }),
+            Ok(id) => Ok(Self{ id, context }),
             Err(err) => Err(err)
         }
     }
 }
 
-impl Drop for VertexShader {
+impl<'context> Drop for VertexShader<'context> {
     fn drop(&mut self) {
         unsafe {
-            gl::DeleteShader(self.get_id());
+            self.context.gl.delete_shader(self.get_id());
         }
     }
 }
 
-impl Resource for VertexShader {
+impl<'context> Resource for VertexShader<'context> {
     fn get_id(&self) -> u32 {
         self.id
     }

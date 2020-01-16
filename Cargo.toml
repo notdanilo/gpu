@@ -13,4 +13,5 @@ repository = "https://github.com/danguafer/gpu"
 
 [dependencies]
 glutin = "0.20.0"
-gl = "0.11.0"
+#gl     = "0.11.0"
+glow   = "0.4.0"

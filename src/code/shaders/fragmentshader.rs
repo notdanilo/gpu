@@ -1,29 +1,32 @@
 use crate::code::shaders::shader::create_shader;
 use crate::Resource;
+use crate::Context;
+use glow::HasContext;
 
-pub struct FragmentShader {
-    id : u32
+pub struct FragmentShader<'context> {
+    id      : u32,
+    context : &'context Context
 }
 
-impl FragmentShader {
-    pub fn new(source: &str) -> Result<Self, String> {
-        let id = create_shader(gl::FRAGMENT_SHADER, &source);
+impl<'context> FragmentShader<'context> {
+    pub fn new(context:&'context Context, source:&str) -> Result<Self, String> {
+        let id = create_shader(context, glow::FRAGMENT_SHADER, source);
         match id {
-            Ok(id) => Ok(Self{ id }),
+            Ok(id) => Ok(Self{ id, context }),
             Err(err) => Err(err)
         }
     }
 }
 
-impl Drop for FragmentShader {
+impl<'context> Drop for FragmentShader<'context> {
     fn drop(&mut self) {
         unsafe {
-            gl::DeleteShader(self.get_id());
+            self.context.gl.delete_shader(self.get_id());
         }
     }
 }
 
-impl Resource for FragmentShader {
+impl<'context> Resource for FragmentShader<'context> {
     fn get_id(&self) -> u32 {
         self.id
     }

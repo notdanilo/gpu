@@ -10,18 +10,17 @@ pub enum ContextDisplay {
 }
 
 pub struct ContextBuilder {
-    cursor: bool,
-    vsync: bool,
-    display: ContextDisplay
+    cursor  : bool,
+    vsync   : bool,
+    display : ContextDisplay
 }
 
 impl Default for ContextBuilder {
     fn default() -> Self {
-        Self {
-            cursor: false,
-            vsync: true,
-            display: ContextDisplay::Screen
-        }
+        let cursor  = false;
+        let vsync   = true;
+        let display = ContextDisplay::Screen;
+        Self {cursor,vsync,display}
     }
 }
 
@@ -78,16 +77,22 @@ impl ContextBuilder {
 
         context.hide_cursor(!self.cursor);
 
+        let gl = glow::Context::from_loader_function(|s| {
+            context.get_proc_address(s) as *const _
+        });
+
         Context {
             events_loop,
-            context
+            context,
+            gl
         }
     }
 }
 
 pub struct Context {
     events_loop : glutin::EventsLoop,
-    context : glutin::WindowedContext
+    context     : glutin::WindowedContext,
+    pub gl      : glow::Context
 }
 
 impl Context {
@@ -110,31 +115,38 @@ impl Context {
         available
     }
 
-    pub fn make_current(&mut self) -> Result<(), ContextError> {
+    pub fn make_current(&self) -> Result<(), ContextError> {
         unsafe {
             self.context.make_current()
         }
     }
 
-    pub fn swap_buffers(&mut self) -> Result<(), ContextError> {
+    pub fn swap_buffers(&self) -> Result<(), ContextError> {
         self.context.swap_buffers()
     }
 
     pub fn get_proc_address(&self, addr: &str) -> *const () {
         self.context.get_proc_address(addr)
     }
+
+    pub fn inner_dimensions(&self) -> (usize, usize) {
+        let dpi      = self.context.get_hidpi_factor();
+        let logical  = self.context.get_inner_size().expect("Couldn't get inner size");
+        let physical = logical.to_physical(dpi);
+        (physical.width as usize, physical.height as usize)
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::{ContextBuilder, ContextDisplay, initialize};
+    use crate::{ContextBuilder, ContextDisplay};
+
     #[test]
     fn create_context() {
         let context_builder = ContextBuilder::new().with_display(ContextDisplay::None);
         let mut context = context_builder.build();
 
         context.make_current().unwrap();
-        initialize(|symbol| context.get_proc_address(symbol) as *const _);
     }
 
     #[test]
@@ -145,7 +157,6 @@ mod tests {
         let mut context = context_builder.build();
 
         context.make_current().unwrap();
-        initialize(|symbol| context.get_proc_address(symbol) as *const _);
 
         context.swap_buffers().unwrap();
 
