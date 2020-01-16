@@ -1,5 +1,3 @@
-extern crate glutin;
-
 pub use glutin::ContextError;
 use glutin::ContextTrait;
 
@@ -81,11 +79,7 @@ impl ContextBuilder {
             context.get_proc_address(s) as *const _
         });
 
-        Context {
-            events_loop,
-            context,
-            gl
-        }
+        Context{events_loop,context,gl}
     }
 }
 
