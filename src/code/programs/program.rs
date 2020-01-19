@@ -2,12 +2,18 @@
 //use crate::data::Texture;
 //use crate::data::Sampler;
 
-use crate::{Resource, Context};
+use crate::Context;
 use glow::HasContext;
 
-pub trait Program {
-    fn get_id(&self) -> u32;
-    fn context(&self) -> Context;
+type ProgramResource = <glow::Context as HasContext>::Program;
+
+pub struct Program<'context> {
+    context  : &'context Context,
+    resource : ProgramResource
+}
+
+impl<'context> Program<'context> {
+    pub fn resource(&self) -> ProgramResource { self.resource }
 
 //    fn bind_buffer(&mut self, buffer: &Buffer, index: u32) {
 //        unsafe {

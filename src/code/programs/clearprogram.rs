@@ -1,5 +1,4 @@
 use crate::Framebuffer;
-use crate::Resource;
 
 use crate::Context;
 use glow::HasContext;
@@ -24,13 +23,13 @@ impl<'context> ClearProgram<'context> {
     }
 
     pub fn set_color(&mut self, color: (f32, f32, f32, f32)) { self.color = color; }
-    pub fn get_color(&self) -> (f32, f32, f32, f32) { self.color }
+    pub fn color(&self) -> (f32, f32, f32, f32) { self.color }
 
     pub fn set_depth(&mut self, depth: f64) { self.depth = depth; }
-    pub fn get_depth(&self) -> f64 { self.depth }
+    pub fn depth(&self) -> f64 { self.depth }
 
     pub fn set_stencil(&mut self, stencil: i32) { self.stencil = stencil; }
-    pub fn get_stencil(&self) -> i32 { self.stencil }
+    pub fn stencil(&self) -> i32 { self.stencil }
 
     pub fn clear(&self, framebuffer:&'context mut Framebuffer<'_>, mask: u32) {
         let gl = &self.context.gl;
@@ -38,7 +37,7 @@ impl<'context> ClearProgram<'context> {
             gl.clear_color(self.color.0, self.color.1, self.color.2, self.color.3);
             gl.clear_depth_f64(self.depth);
             gl.clear_stencil(self.stencil);
-            gl.bind_framebuffer(glow::FRAMEBUFFER, Some(framebuffer.get_id()));
+            gl.bind_framebuffer(glow::FRAMEBUFFER, Some(framebuffer.resource()));
             gl.clear(mask);
         }
     }
@@ -51,7 +50,6 @@ mod tests {
     #[test]
     fn clear_display() {
         use std::{thread, time};
-        use std::ffi::c_void;
 
         let components = 3;
         let dimension = (320, 240);

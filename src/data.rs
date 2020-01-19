@@ -1,5 +1,3 @@
-pub use crate::Resource;
-
 //mod buffer;
 //mod textures;
 //mod vao;

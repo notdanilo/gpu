@@ -1,8 +1,9 @@
-use crate::Resource;
 //use crate::data::Texture2D;
 use crate::data::Renderbuffer;
 use crate::Context;
 use glow::HasContext;
+
+type FramebufferResource = <glow::Context as HasContext>::Framebuffer;
 
 enum FramebufferAttachment<'context> {
 //    Texture(Texture2D),
@@ -11,12 +12,12 @@ enum FramebufferAttachment<'context> {
 }
 
 pub struct Framebuffer<'context> {
-    context   : &'context Context,
-    id        : u32,
-    dimension : (usize, usize),
-    color     : FramebufferAttachment<'context>,
-    _depth    : FramebufferAttachment<'context>,
-    _stencil  : FramebufferAttachment<'context>
+    context    : &'context Context,
+    resource   : FramebufferResource,
+    dimensions : (usize, usize),
+    color      : FramebufferAttachment<'context>,
+    _depth     : FramebufferAttachment<'context>,
+    _stencil   : FramebufferAttachment<'context>
 }
 
 //FIXME: Incomplete implementation
@@ -29,12 +30,12 @@ pub struct Framebuffer<'context> {
 impl<'context> Framebuffer<'context> {
     pub fn default(context:&'context Context) -> Self {
         let gl         = &context.gl;
-        let dimension  = context.inner_dimensions();
-        let id         = 0;
+        let dimensions = context.inner_dimensions();
+        let resource   = Default::default();
         let color      = FramebufferAttachment::Renderbuffer(Renderbuffer::default(context));
         let _depth     = FramebufferAttachment::Renderbuffer(Renderbuffer::default(context));
         let _stencil   = FramebufferAttachment::Renderbuffer(Renderbuffer::default(context));
-        Self {context,id,dimension,color,_depth,_stencil}
+        Self {context,resource,dimensions,color,_depth,_stencil}
     }
 
 //    pub fn new(color: Option<Texture2D>, depth: Option<Texture2D>, stencil: Option<Texture2D>) -> Result<Self, String> {
@@ -75,10 +76,12 @@ impl<'context> Framebuffer<'context> {
 //        })
 //    }
 
-    pub fn get_dimension(&self) -> (usize, usize) { self.dimension }
+    pub fn resource(&self) -> FramebufferResource { self.resource }
+
+    pub fn dimensions(&self) -> (usize, usize) { self.dimensions }
 
 //    pub fn get_color(&self) -> Option<&Texture2D> {
-//        match &self.color {
+//        match &self.color {get_dimension
 //            FramebufferAttachment::Texture(texture) => Some(&texture),
 //            _ => None
 //        }
@@ -88,11 +91,7 @@ impl<'context> Framebuffer<'context> {
 impl<'context> Drop for Framebuffer<'context> {
     fn drop(&mut self) {
         unsafe {
-            self.context.gl.delete_framebuffer(self.get_id());
+            self.context.gl.delete_framebuffer(self.resource());
         }
     }
-}
-
-impl<'context> Resource for Framebuffer<'context> {
-    fn get_id(&self) -> u32 { self.id }
 }

@@ -1,24 +1,35 @@
-use std::ffi::CString;
-use std::str;
-use std::ptr;
 use crate::Context;
 use glow::HasContext;
 
-use crate::Resource;
+type ShaderResource = <glow::Context as HasContext>::Shader;
 
-pub trait Shader : Resource {}
+pub struct Shader<'context> {
+    resource : ShaderResource,
+    context  : &'context Context
+}
 
-pub fn create_shader(context:&Context, shader_type:u32, source:&str) -> Result<u32, String> {
-    let gl = &context.gl;
-    let id = unsafe { gl.create_shader(shader_type)? };
-    unsafe {
-        gl.shader_source(id, source);
-        gl.compile_shader(id);
+impl<'context> Shader<'context> {
+    pub fn new(context:&'context Context, shader_type:u32, source:&str) -> Result<Self, String> {
+        let gl       = &context.gl;
+        let resource = unsafe { gl.create_shader(shader_type)? };
+        unsafe {
+            gl.shader_source(resource, source);
+            gl.compile_shader(resource);
 
+            if !gl.get_shader_compile_status(resource) {
+                return Err(gl.get_shader_info_log(resource));
+            }
+        }
+        Ok(Self {resource,context})
+    }
 
-        if !gl.get_shader_compile_status(id) {
-            return Err(gl.get_shader_info_log(id));
+    pub fn resource(&self) -> ShaderResource { self.resource }
+}
+
+impl<'context> Drop for Shader<'context> {
+    fn drop(&mut self) {
+        unsafe {
+            self.context.gl.delete_shader(self.resource());
         }
     }
-    Ok(id)
 }

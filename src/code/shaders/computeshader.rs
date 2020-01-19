@@ -1,30 +1,16 @@
-use crate::code::shaders::shader::create_shader;
-use crate::Resource;
+use crate::code::shaders::shader::Shader;
+use crate::Context;
 
-pub struct ComputeShader {
-    id : u32
+use shrinkwraprs::Shrinkwrap;
+
+#[derive(Shrinkwrap)]
+pub struct ComputeShader<'context> {
+    shader : Shader<'context>
 }
 
-impl ComputeShader {
-    pub fn new(source: &str) -> Result<Self, String> {
-        let id = create_shader(gl::COMPUTE_SHADER, &source);
-        match id {
-            Ok(id) => Ok(Self{ id }),
-            Err(err) => Err(err)
-        }
-    }
-}
-
-impl Drop for ComputeShader {
-    fn drop(&mut self) {
-        unsafe {
-            gl::DeleteShader(self.get_id());
-        }
-    }
-}
-
-impl Resource for ComputeShader {
-    fn get_id(&self) -> u32 {
-        self.id
+impl<'context> ComputeShader<'context> {
+    pub fn new(context:&'context Context, source: &str) -> Result<Self, String> {
+        let shader = Shader::new(context, glow::COMPUTE_SHADER, source)?;
+        Ok(Self{shader})
     }
 }
