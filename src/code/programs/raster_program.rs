@@ -53,7 +53,7 @@ impl RasterProgram {
 
     pub fn raster(&self, framebuffer: &Framebuffer, vao: &VertexArrayObject, geometry : RasterGeometry, elements: u32) {
         unsafe {
-            gl::BindFramebuffer(gl::FRAMEBUFFER, framebuffer.get_id());
+            framebuffer.bind();
             gl::UseProgram(self.get_id());
             gl::BindVertexArray(vao.get_id());
             gl::Enable(gl::PROGRAM_POINT_SIZE);

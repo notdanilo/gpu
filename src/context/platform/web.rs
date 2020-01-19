@@ -1,6 +1,7 @@
 use crate::context::ContextBuilder;
 use crate::context::ContextDisplay;
 
+use web_sys::HtmlCanvasElement;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 
@@ -17,7 +18,8 @@ use wasm_bindgen::JsCast;
 // consider a loop for when the Context doesn't need to swap buffers and is only used for computing?
 
 pub struct Context {
-    pub gl      : glow::Context
+    pub(crate) gl : glow::Context,
+    canvas        : HtmlCanvasElement
 }
 
 impl Context {
@@ -37,17 +39,12 @@ impl Context {
         body.append_with_node_1(&canvas).expect("Couldn't append canvas");
         let webgl2_context = canvas
             .get_context("webgl2")
+            .expect("get_context failed")
             .expect("Couldn't get WebGL2 context")
-            .expect("Wtf is this second expect")
             .dyn_into::<web_sys::WebGl2RenderingContext>()
             .expect("Couldn't convert WebGl2RenderingContext");
         let gl = glow::Context::from_webgl2_context(webgl2_context);
-        use glow::HasContext;
-        unsafe {
-            gl.clear_color(0.0, 0.0, 1.0, 1.0);
-            gl.clear(glow::COLOR_BUFFER_BIT);
-        }
-        Self {gl}
+        Self {gl,canvas}
     }
 
     pub fn run(&mut self) -> bool {
@@ -55,11 +52,11 @@ impl Context {
     }
 
     pub fn make_current(&self) -> Result<(), String> {
-        Err("".into())
+        Ok(())
     }
 
     pub fn swap_buffers(&self) -> Result<(), String> {
-        Err("".into())
+        Ok(())
     }
 
     pub fn get_proc_address(&self, addr: &str) -> *const () {
@@ -67,6 +64,6 @@ impl Context {
     }
 
     pub fn inner_dimensions(&self) -> (usize, usize) {
-        (0, 0)
+        (self.canvas.width() as usize, self.canvas.height() as usize)
     }
 }

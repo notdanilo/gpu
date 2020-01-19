@@ -38,6 +38,14 @@ impl<'context> Framebuffer<'context> {
         Self {context,resource,dimensions,color,_depth,_stencil}
     }
 
+    pub(crate) fn bind(&self) {
+        let gl       = &self.context.gl;
+        let resource = self.resource();
+        let resource = if resource == Default::default() { None } else { Some(resource) };
+        unsafe {
+            gl.bind_framebuffer(glow::FRAMEBUFFER, resource);
+        }
+    }
 //    pub fn new(color: Option<Texture2D>, depth: Option<Texture2D>, stencil: Option<Texture2D>) -> Result<Self, String> {
 //        let mut id = 0;
 //        unsafe {

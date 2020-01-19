@@ -65,30 +65,3 @@ impl ContextBuilder {
         Context::new(&self)
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use crate::{ContextBuilder, ContextDisplay};
-
-    #[test]
-    fn create_context() {
-        let context_builder = ContextBuilder::new().with_display(ContextDisplay::None);
-        let mut context = context_builder.build();
-
-        context.make_current().unwrap();
-    }
-
-    #[test]
-    fn present_context() {
-        use std::{thread, time};
-
-        let context_builder = ContextBuilder::new().with_display(ContextDisplay::Window(String::from("present_context (black)"), 320, 240));
-        let mut context = context_builder.build();
-
-        context.make_current().unwrap();
-
-        context.swap_buffers().unwrap();
-
-        thread::sleep(time::Duration::from_millis(1000));
-    }
-}

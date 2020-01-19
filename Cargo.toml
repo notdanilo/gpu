@@ -22,8 +22,8 @@ shrinkwraprs = "0.3.0"
 glutin = "0.20.0"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-web_sys      = { version = "0.3", package = "web-sys", features=["console","Document",
-"Node", "Element", "HtmlElement"] }
+web_sys      = { version = "0.3", package = "web-sys",features = ["console","Document",
+"Node", "Element", "HtmlElement", "HtmlCanvasElement"] }
 wasm-bindgen = { version = "0.2" }
 
 [target.'cfg(target_arch = "wasm32")'.dev-dependencies]
