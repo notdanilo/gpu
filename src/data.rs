@@ -1,10 +1,10 @@
-//mod buffer;
+mod buffer;
 //mod textures;
 //mod vao;
 mod renderbuffer;
 mod framebuffer;
 
-//pub use buffer::Buffer;
+pub use buffer::Buffer;
 //pub use textures::*;
 //pub use vao::VertexArrayObject;
 pub use renderbuffer::Renderbuffer;
