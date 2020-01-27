@@ -1,37 +1,39 @@
-use crate::Resource;
+//FIXME: Create Wrap struct and Filter struct.
 
-pub struct Sampler {
-    id : u32
+use crate::Context;
+
+use glow::HasContext;
+
+type SamplerResource = <glow::Context as HasContext>::Sampler;
+
+pub struct Sampler<'context> {
+    context  : &'context Context,
+    resource : SamplerResource
 }
 
-impl Default for Sampler {
-    fn default() -> Self {
-        let mut id = 0;
-        unsafe {
-            gl::GenSamplers(1, &mut id);
-            gl::SamplerParameteri(id, gl::TEXTURE_WRAP_S, gl::REPEAT as i32);
-            gl::SamplerParameteri(id, gl::TEXTURE_WRAP_T, gl::REPEAT as i32);
-            gl::SamplerParameteri(id, gl::TEXTURE_MIN_FILTER, gl::NEAREST as i32);
-            gl::SamplerParameteri(id, gl::TEXTURE_MAG_FILTER, gl::NEAREST as i32);
-        }
-        Self {
-            id
-        }
+impl<'context> Sampler<'context> {
+    pub fn new(context:&'context Context) -> Self {
+        let gl = &context.gl;
+        let resource = unsafe {
+            let resource = gl.create_sampler().expect("Couldn't create sampler");
+            gl.sampler_parameter_i32(resource, glow::TEXTURE_WRAP_S, glow::REPEAT as i32);
+            gl.sampler_parameter_i32(resource, glow::TEXTURE_WRAP_T, glow::REPEAT as i32);
+            gl.sampler_parameter_i32(resource, glow::TEXTURE_MIN_FILTER, glow::NEAREST as i32);
+            gl.sampler_parameter_i32(resource, glow::TEXTURE_MAG_FILTER, glow::NEAREST as i32);
+            resource
+        };
+        Self {context,resource}
+    }
+
+    pub fn resource(&self) -> SamplerResource {
+        self.resource
     }
 }
 
-impl Sampler {
-    pub fn new() -> Self { Default::default() }
-}
-
-impl Drop for Sampler {
+impl Drop for Sampler<'_> {
     fn drop(&mut self) {
         unsafe {
-            gl::DeleteSamplers(1, &self.get_id());
+            self.context.gl.delete_sampler(self.resource());
         }
     }
-}
-
-impl Resource for Sampler {
-    fn get_id(&self) -> u32 { self.id }
 }

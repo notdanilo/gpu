@@ -1,164 +1,111 @@
-use std::ffi::c_void;
+use crate::Context;
+
+use crate::data::as_u8_slice;
+use crate::data::as_u8_mut_slice;
+
+use glow::HasContext;
 
 use crate::TextureFormat;
 use crate::ColorFormat;
 use crate::ComponentFormat;
 use crate::Texture;
-use crate::Resource;
 
-pub struct Texture3D {
-    id : u32,
-    format: TextureFormat
+use shrinkwraprs::Shrinkwrap;
+
+#[derive(Shrinkwrap)]
+#[shrinkwrap(mutable)]
+pub struct Texture3D<'context> {
+    #[shrinkwrap(main_field)]
+    pub texture : Texture<'context>,
+    dimensions  : (usize,usize,usize)
 }
 
-impl Texture3D {
-    fn new() -> Self {
-        let mut id = 0;
-        unsafe {
-            gl::GenTextures(1, &mut id);
-        }
-        Self {
-            id,
-            format: TextureFormat::new(ColorFormat::RGBA, ComponentFormat::F32)
-        }
+impl<'context> Texture3D<'context> {
+    fn new(context:&'context Context) -> Self {
+        let format     = TextureFormat::new(ColorFormat::RGBA, ComponentFormat::F32);
+        let texture    = Texture::new(context,format,glow::TEXTURE_3D);
+        let dimensions = (0,0,0);
+        Self {texture,dimensions}
     }
 
-    pub fn get_dimension(&self) -> (usize, usize, usize) {
-        (self.get_width(), self.get_height(), self.get_depth())
+    pub fn dimensions(&self) -> (usize, usize, usize) {
+        self.dimensions
     }
 
-    pub fn get_width(&self) -> usize {
-        unsafe {
-            let mut width = 0;
-            gl::GetTexLevelParameteriv(gl::TEXTURE_3D, 0, gl::TEXTURE_WIDTH, &mut width);
-            width as usize
-        }
-    }
-
-    pub fn get_height(&self) -> usize {
-        unsafe {
-            let mut height = 0;
-            gl::GetTexLevelParameteriv(gl::TEXTURE_3D, 0, gl::TEXTURE_HEIGHT, &mut height);
-            height as usize
-        }
-    }
-
-    pub fn get_depth(&self) -> usize {
-        unsafe {
-            let mut depth = 0;
-            gl::GetTexLevelParameteriv(gl::TEXTURE_3D, 0, gl::TEXTURE_DEPTH, &mut depth);
-            depth as usize
-        }
-    }
-
-    pub fn allocate(dimension: (usize, usize, usize), format: &TextureFormat) -> Self {
-        let mut texture = Self::new();
-        texture.reallocate(dimension, &format);
+    pub fn allocate
+    (context:&'context Context, dimensions: (usize, usize, usize), format: &TextureFormat) -> Self {
+        let mut texture = Self::new(context);
+        texture.reallocate(dimensions, &format);
         texture
     }
 
-    pub fn from_data<T>(dimension: (usize, usize, usize), format: &TextureFormat, data: &[T], data_format: &TextureFormat) -> Self {
-        let mut texture = Self::new();
-        texture.set_data(dimension, &format, data, &data_format);
+    pub fn from_data<T>
+    (context:&'context Context, dimensions: (usize, usize, usize), format: &TextureFormat, data: &[T], data_format: &TextureFormat) -> Self {
+        let mut texture = Self::new(context);
+        texture.set_data(dimensions, &format, data, &data_format);
         texture
     }
 
-    pub fn reallocate(&mut self, dimension: (usize, usize, usize), format: &TextureFormat) {
-        self.format = format.clone();
+    pub fn reallocate(&mut self, dimensions: (usize, usize, usize), format: &TextureFormat) {
+        self.dimensions = dimensions;
+        let gl          = &self.context.gl;
+        self.format     = format.clone();
+        self.bind();
         unsafe {
-            gl::BindTexture(gl::TEXTURE_3D, self.id);
-            gl::TexStorage3D(gl::TEXTURE_3D, 1, format.get_internal_format(), dimension.0 as i32, dimension.1 as i32, dimension.2 as i32);
+            let tex_type        = self.typ();
+            let internal_format = format.get_internal_format();
+            gl.tex_storage_3d(tex_type, 1, internal_format, dimensions.0 as i32, dimensions.1 as
+                i32, dimensions.2 as i32);
         }
     }
 
-    pub fn set_data<T>(&mut self, dimension: (usize, usize, usize), format: &TextureFormat, data: &[T], data_format: &TextureFormat) {
-        self.format = format.clone();
+    pub fn set_data<T>(&mut self, dimensions: (usize, usize, usize), format: &TextureFormat,
+                       data: &[T], data_format: &TextureFormat) {
+        self.dimensions = dimensions;
+        let gl          = &self.context.gl;
+        self.format     = format.clone();
+        self.bind();
         unsafe {
-            gl::BindTexture(gl::TEXTURE_3D, self.id);
-            let (color, ty) = data_format.get_format_type();
-            gl::TexImage3D(gl::TEXTURE_3D, 0, format.get_internal_format() as i32, dimension.0 as i32, dimension.1 as i32, dimension.2 as i32, 0, color, ty, &data[0] as *const T as *const c_void);
+            let (color, ty)     = data_format.get_format_type();
+            let internal_format = format.get_internal_format() as i32;
+            let width           = dimensions.0 as i32;
+            let height          = dimensions.1 as i32;
+            let depth           = dimensions.2 as i32;
+            let pixels          = Some(as_u8_slice(data));
+            gl.tex_image_3d(self.typ(),0,internal_format,width,height,depth,0,color,ty,pixels);
         }
     }
 
     pub fn get_data<T>(&self) -> Vec<T> {
-        let capacity = self.get_width() * self.get_height() * self.get_depth() * self.get_format().get_color_format().get_size();
-        let mut data : Vec<T> = Vec::with_capacity(capacity);
+        let gl                   = &self.context.gl;
+        let (width,height,depth) = self.dimensions();
+        let color_size           = self.format().get_color_format().get_size();
+        let capacity             = width * height * depth * color_size;
+        let mut data : Vec<T>    = Vec::with_capacity(capacity);
         unsafe {
             data.set_len(capacity);
 
-            gl::ActiveTexture(gl::TEXTURE0);
-            gl::BindTexture(gl::TEXTURE_3D, self.get_id());
-            let (format, ty) = self.format.get_format_type();
-            gl::GetTexImage(gl::TEXTURE_3D, 0, format, ty, data.as_mut_ptr() as *mut c_void);
+            /// FIXME: Pre-create a transfer framebuffer in Context.
+            let fb = gl.create_framebuffer().expect("Couldn't create Framebuffer");
 
+            for depth in 0..depth {
+                gl.bind_framebuffer(glow::FRAMEBUFFER, Some(fb));
+                gl.framebuffer_texture_layer(glow::FRAMEBUFFER,
+                                          glow::COLOR_ATTACHMENT0,
+                                          Some(self.resource()),
+                                          0,
+                                          depth as i32);
+
+                let (format, ty) = self.format().get_format_type();
+                let offset = width * height * depth * color_size;
+                let pixels = &mut as_u8_mut_slice(data.as_mut())[offset..];
+                let (width, height, _) = self.dimensions();
+                gl.read_pixels(0, 0, width as i32, height as i32, format, ty, pixels);
+            }
+
+            gl.bind_framebuffer(glow::FRAMEBUFFER, None);
+            gl.delete_framebuffer(fb);
         }
         data
-    }
-}
-
-impl Drop for Texture3D {
-    fn drop(&mut self) {
-        unsafe {
-            gl::DeleteTextures(1, &self.get_id());
-        }
-    }
-}
-
-impl Resource for Texture3D {
-    fn get_id(&self) -> u32 { self.id }
-}
-
-impl Texture for Texture3D {
-    fn get_type(&self) -> u32 { gl::TEXTURE_3D }
-    fn get_format(&self) -> &TextureFormat { &self.format }
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::{ContextBuilder, ContextDisplay, initialize, Texture, Texture3D, TextureFormat, ColorFormat, ComponentFormat};
-
-    #[test]
-    fn allocation() {
-        let context_builder = ContextBuilder::new().with_display(ContextDisplay::None);
-        let mut context = context_builder.build();
-
-        context.make_current().unwrap();
-        initialize(|symbol| context.get_proc_address(symbol) as *const _);
-
-        let dimension = (111, 222, 333);
-        let texture = Texture3D::allocate(dimension, &TextureFormat(ColorFormat::RGBA, ComponentFormat::U8));
-        assert_eq!(texture.get_dimension(), dimension);
-    }
-
-    #[test]
-    fn from_data() {
-        let context_builder = ContextBuilder::new().with_display(ContextDisplay::None);
-        let mut context = context_builder.build();
-
-        context.make_current().unwrap();
-        initialize(|symbol| context.get_proc_address(symbol) as *const _);
-
-        let mut data_in : Vec<f32> = Vec::new();
-        let dimension = (8, 8, 8);
-        let components = 2;
-        for x in 0..dimension.0 {
-            for y in 0..dimension.1 {
-                for z in 0..dimension.2 {
-                    for w in 1..(components+1) {
-                        data_in.push((w * (dimension.1 * (y * dimension.0 + x) + z)) as f32);
-                    }
-                }
-            }
-        }
-
-        let data_in_format = TextureFormat(ColorFormat::components(components), ComponentFormat::F32);
-        let texture = Texture3D::from_data(dimension, &data_in_format, &data_in, &data_in_format);
-
-        assert_eq!(components, texture.get_format().get_color_format().get_size());
-        assert_eq!(dimension, texture.get_dimension());
-
-        let data_out = texture.get_data();
-
-        assert_eq!(data_in, data_out);
     }
 }

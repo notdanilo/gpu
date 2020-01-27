@@ -1,154 +1,107 @@
-use std::ffi::c_void;
+use crate::Context;
 
-use crate::data::textures::TextureFormat;
+use crate::data::as_u8_slice;
+use crate::data::as_u8_mut_slice;
+
+use glow::HasContext;
+
+use crate::TextureFormat;
 use crate::ColorFormat;
 use crate::ComponentFormat;
 use crate::Texture;
-use crate::Resource;
 
-pub struct Texture2D {
-    id : u32,
-    format: TextureFormat
+use shrinkwraprs::Shrinkwrap;
+
+#[derive(Shrinkwrap)]
+#[shrinkwrap(mutable)]
+pub struct Texture2D<'context> {
+    #[shrinkwrap(main_field)]
+    pub texture : Texture<'context>,
+    dimensions : (usize,usize)
 }
 
-impl Texture2D {
-    fn new() -> Self {
-        let mut id = 0;
-        unsafe {
-            gl::GenTextures(1, &mut id);
-        }
-        Self {
-            id,
-            format: TextureFormat::new(ColorFormat::RGBA, ComponentFormat::F32)
-        }
+impl<'context> Texture2D<'context> {
+    fn new(context:&'context Context) -> Self {
+        let format     = TextureFormat::new(ColorFormat::RGBA, ComponentFormat::F32);
+        let texture    = Texture::new(context,format,glow::TEXTURE_2D);
+        let dimensions = (0,0);
+        Self {texture,dimensions}
     }
 
-    pub fn get_dimension(&self) -> (usize, usize) {
-        (self.get_width(), self.get_height())
+    pub fn dimensions(&self) -> (usize, usize) {
+        self.dimensions
     }
 
-    pub fn get_width(&self) -> usize {
-        unsafe {
-            let mut width = 0;
-            gl::GetTexLevelParameteriv(gl::TEXTURE_2D, 0, gl::TEXTURE_WIDTH, &mut width);
-            width as usize
-        }
-    }
-
-    pub fn get_height(&self) -> usize {
-        unsafe {
-            let mut height = 0;
-            gl::GetTexLevelParameteriv(gl::TEXTURE_2D, 0, gl::TEXTURE_HEIGHT, &mut height);
-            height as usize
-        }
-    }
-
-    pub fn allocate(dimension: (usize, usize), format: &TextureFormat) -> Self {
-        let mut texture = Self::new();
+    pub fn allocate
+    (context:&'context Context, dimension:(usize,usize), format:&TextureFormat) -> Self {
+        let mut texture = Self::new(context);
         texture.reallocate(dimension, &format);
         texture
     }
 
-    pub fn from_data<T>(dimension: (usize, usize), format: &TextureFormat, data: &[T], data_format: &TextureFormat) -> Self {
-        let mut texture = Self::new();
+    pub fn from_data<T>
+    ( context:&'context Context
+    , dimension:(usize,usize)
+    , format:&TextureFormat
+    , data: &[T]
+    , data_format:&TextureFormat) -> Self {
+        let mut texture = Self::new(context);
         texture.set_data(dimension, &format, data, &data_format);
         texture
     }
 
-    pub fn reallocate(&mut self, dimension: (usize, usize), format: &TextureFormat) {
-        self.format = format.clone();
+    pub fn reallocate(&mut self, dimensions: (usize, usize), format: &TextureFormat) {
+        self.dimensions = dimensions;
+        let gl          = &self.context.gl;
+        self.format     = format.clone();
+        self.bind();
         unsafe {
-            gl::BindTexture(gl::TEXTURE_2D, self.id);
-            gl::TexStorage2D(gl::TEXTURE_2D, 1, format.get_internal_format(), dimension.0 as i32, dimension.1 as i32);
+            let tex_type        = self.typ();
+            let internal_format = format.get_internal_format();
+            gl.tex_storage_2d(tex_type, 1, internal_format, dimensions.0 as i32, dimensions.1 as i32);
         }
     }
 
-    pub fn set_data<T>(&mut self, dimension: (usize, usize), format: &TextureFormat, data: &[T], data_format: &TextureFormat) {
-        self.format = format.clone();
+    pub fn set_data<T>(&mut self, dimensions: (usize, usize), format: &TextureFormat, data: &[T], data_format: &TextureFormat) {
+        self.dimensions = dimensions;
+        let gl          = &self.context.gl;
+        self.format     = format.clone();
+        self.bind();
         unsafe {
-            gl::BindTexture(gl::TEXTURE_2D, self.id);
-            let (color, ty) = data_format.get_format_type();
-            gl::TexImage2D(gl::TEXTURE_2D, 0, format.get_internal_format() as i32, dimension.0 as i32, dimension.1 as i32, 0, color, ty, &data[0] as *const T as *const c_void);
+            let (color, ty)     = data_format.get_format_type();
+            let internal_format = format.get_internal_format() as i32;
+            let width           = dimensions.0 as i32;
+            let height          = dimensions.1 as i32;
+            let pixels          = Some(as_u8_slice(data));
+            gl.tex_image_2d(self.typ(),0,internal_format,width,height,0,color,ty,pixels);
         }
     }
 
     pub fn get_data<T>(&self) -> Vec<T> {
-        let capacity = self.get_width() * self.get_height() * self.get_format().get_color_format().get_size();
+        let gl                = &self.context.gl;
+        let (width,height)    = self.dimensions();
+        let capacity          = width * height * self.format().get_color_format().get_size();
         let mut data : Vec<T> = Vec::with_capacity(capacity);
         unsafe {
             data.set_len(capacity);
 
-            gl::ActiveTexture(gl::TEXTURE0);
-            gl::BindTexture(gl::TEXTURE_2D, self.get_id());
-            let (format, ty) = self.format.get_format_type();
-            gl::GetTexImage(gl::TEXTURE_2D, 0, format, ty, data.as_mut_ptr() as *mut c_void);
+            /// FIXME: Pre-create a transfer framebuffer in Context.
+            let fb = gl.create_framebuffer().expect("Couldn't create Framebuffer");
+            gl.bind_framebuffer(glow::FRAMEBUFFER, Some(fb));
+            gl.framebuffer_texture_2d(glow::FRAMEBUFFER,
+                                      glow::COLOR_ATTACHMENT0,
+                                      glow::TEXTURE_2D,
+                                      Some(self.resource()),
+                                      0);
 
+            let (format, ty) = self.format().get_format_type();
+            let pixels       = as_u8_mut_slice(data.as_mut());
+            let (width, height) = self.dimensions();
+            gl.read_pixels(0, 0, width as i32, height as i32, format, ty, pixels);
+
+            gl.bind_framebuffer(glow::FRAMEBUFFER, None);
+            gl.delete_framebuffer(fb);
         }
         data
-    }
-}
-
-impl Resource for Texture2D {
-    fn get_id(&self) -> u32 { self.id }
-}
-
-impl Texture for Texture2D {
-    fn get_type(&self) -> u32 { gl::TEXTURE_2D }
-    fn get_format(&self) -> &TextureFormat { &self.format }
-}
-
-impl Drop for Texture2D {
-    fn drop(&mut self) {
-        unsafe {
-            gl::DeleteTextures(1, &self.get_id());
-        }
-    }
-}
-
-
-#[cfg(test)]
-mod tests {
-    use crate::{ContextBuilder, ContextDisplay, initialize, Texture, Texture2D, TextureFormat, ColorFormat, ComponentFormat};
-    #[test]
-    fn allocation() {
-        let context_builder = ContextBuilder::new().with_display(ContextDisplay::None);
-        let mut context = context_builder.build();
-
-        context.make_current().unwrap();
-        initialize(|symbol| context.get_proc_address(symbol) as *const _);
-
-        let dimension = (123, 321);
-        let texture = Texture2D::allocate(dimension, &TextureFormat(ColorFormat::RGBA, ComponentFormat::U8));
-        assert_eq!(texture.get_dimension(), dimension);
-    }
-
-    #[test]
-    fn from_data() {
-        let context_builder = ContextBuilder::new().with_display(ContextDisplay::None);
-        let mut context = context_builder.build();
-
-        context.make_current().unwrap();
-        initialize(|symbol| context.get_proc_address(symbol) as *const _);
-
-        let mut data_in : Vec<f32> = Vec::new();
-        let dimension = (8, 8);
-        let components = 2;
-        for x in 0..dimension.0 {
-            for y in 0..dimension.1 {
-                for z in 1..(components+1) {
-                    data_in.push((z * (y * dimension.0 + x)) as f32);
-                }
-            }
-        }
-
-        let data_in_format = TextureFormat(ColorFormat::components(components), ComponentFormat::F32);
-        let texture = Texture2D::from_data(dimension, &data_in_format, &data_in, &data_in_format);
-
-        assert_eq!(components, texture.get_format().get_color_format().get_size());
-        assert_eq!(dimension, texture.get_dimension());
-
-        let data_out = texture.get_data();
-
-        assert_eq!(data_in, data_out);
     }
 }

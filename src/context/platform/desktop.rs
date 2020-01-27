@@ -1,5 +1,6 @@
 use crate::context::ContextBuilder;
 use crate::context::ContextDisplay;
+use crate::Framebuffer;
 
 pub use glutin::ContextError;
 use glutin::ContextTrait;

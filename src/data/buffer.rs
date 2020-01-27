@@ -4,6 +4,9 @@ use glow::HasContext;
 
 type BufferResource = <glow::Context as HasContext>::Buffer;
 
+use super::as_u8_mut_slice;
+use super::as_u8_slice;
+
 pub struct Buffer<'context> {
     context  : &'context Context,
     resource : BufferResource
@@ -11,9 +14,8 @@ pub struct Buffer<'context> {
 
 impl<'context> Buffer<'context> {
     fn new(context:&'context Context) -> Buffer<'context> {
-        let gl = &context.gl;
-        let mut resource = unsafe {
-            gl.create_buffer().expect("Couldn't create Buffer")
+        let resource = unsafe {
+            context.gl.create_buffer().expect("Couldn't create Buffer")
         };
         Buffer {context,resource}
     }
@@ -47,9 +49,7 @@ impl<'context> Buffer<'context> {
         let gl = &self.context.gl;
         self.bind();
         unsafe {
-            let mut size : i32 = 0;
-            //gl::GetBufferParameteriv(gl::ARRAY_BUFFER, gl::BUFFER_SIZE, &mut size as *mut i32);
-            size as usize
+            gl.get_buffer_parameter_i32(glow::ARRAY_BUFFER, glow::BUFFER_SIZE) as usize
         }
     }
 
@@ -92,27 +92,5 @@ impl Drop for Buffer<'_> {
         unsafe {
             self.context.gl.delete_buffer(self.resource());
         }
-    }
-}
-
-
-
-// =============
-// === Utils ===
-// =============
-
-fn as_u8_mut_slice<T>(data:&mut[T]) -> &mut[u8] {
-    unsafe {
-        let ptr = data.as_mut_ptr();
-        let len = data.len() * std::mem::size_of::<T>();
-        std::slice::from_raw_parts_mut(ptr as *mut u8, len)
-    }
-}
-
-fn as_u8_slice<T>(data:&[T]) -> &[u8] {
-    unsafe {
-        let ptr = data.as_ptr();
-        let len = data.len() * std::mem::size_of::<T>();
-        std::slice::from_raw_parts(ptr as *const u8, len)
     }
 }

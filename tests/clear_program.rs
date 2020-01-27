@@ -1,7 +1,7 @@
 mod utils;
 
 #[cfg(test)]
-mod tests {
+mod clear_program {
     use super::utils::test;
     use gpu::ContextBuilder;
     use gpu::ContextDisplay;

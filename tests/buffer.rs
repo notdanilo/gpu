@@ -1,7 +1,7 @@
 mod utils;
 
 #[cfg(test)]
-mod tests {
+mod buffer {
     use super::utils::test;
     use gpu::ContextBuilder;
     use gpu::ContextDisplay;
@@ -10,7 +10,7 @@ mod tests {
     #[test]
     fn allocation() {
         let context_builder = ContextBuilder::new().with_display(ContextDisplay::None);
-        let mut context = context_builder.build();
+        let context = context_builder.build();
 
         context.make_current().unwrap();
 
@@ -21,7 +21,7 @@ mod tests {
     #[test]
     fn from_data() {
         let context_builder = ContextBuilder::new().with_display(ContextDisplay::None);
-        let mut context = context_builder.build();
+        let context = context_builder.build();
 
         context.make_current().unwrap();
 

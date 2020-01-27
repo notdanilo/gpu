@@ -19,44 +19,44 @@ impl TextureFormat {
         let (color, component) = (&self.0, &self.1);
         match color {
             ColorFormat::RGBA => match component {
-                ComponentFormat::U8 => gl::RGBA8,
-                ComponentFormat::U16 => gl::RGBA16UI,
-                ComponentFormat::U32 => gl::RGBA32UI,
-                ComponentFormat::I8 => gl::RGBA8I,
-                ComponentFormat::I16 => gl::RGBA16I,
-                ComponentFormat::I32 => gl::RGBA32I,
-                ComponentFormat::F16 => gl::RGBA16F,
-                ComponentFormat::F32 => gl::RGBA32F
+                ComponentFormat::U8  => glow::RGBA8,
+                ComponentFormat::U16 => glow::RGBA16UI,
+                ComponentFormat::U32 => glow::RGBA32UI,
+                ComponentFormat::I8  => glow::RGBA8I,
+                ComponentFormat::I16 => glow::RGBA16I,
+                ComponentFormat::I32 => glow::RGBA32I,
+                ComponentFormat::F16 => glow::RGBA16F,
+                ComponentFormat::F32 => glow::RGBA32F
             },
             ColorFormat::RGB => match component {
-                ComponentFormat::U8 => gl::RGB8,
-                ComponentFormat::U16 => gl::RGB16UI,
-                ComponentFormat::U32 => gl::RGB32UI,
-                ComponentFormat::I8 => gl::RGB8I,
-                ComponentFormat::I16 => gl::RGB16I,
-                ComponentFormat::I32 => gl::RGB32I,
-                ComponentFormat::F16 => gl::RGB16F,
-                ComponentFormat::F32 => gl::RGB32F
+                ComponentFormat::U8  => glow::RGB8,
+                ComponentFormat::U16 => glow::RGB16UI,
+                ComponentFormat::U32 => glow::RGB32UI,
+                ComponentFormat::I8  => glow::RGB8I,
+                ComponentFormat::I16 => glow::RGB16I,
+                ComponentFormat::I32 => glow::RGB32I,
+                ComponentFormat::F16 => glow::RGB16F,
+                ComponentFormat::F32 => glow::RGB32F
             },
             ColorFormat::RG => match component {
-                ComponentFormat::U8 => gl::RG8,
-                ComponentFormat::U16 => gl::RG16UI,
-                ComponentFormat::U32 => gl::RG32UI,
-                ComponentFormat::I8 => gl::RG8I,
-                ComponentFormat::I16 => gl::RG16I,
-                ComponentFormat::I32 => gl::RG32I,
-                ComponentFormat::F16 => gl::RG16F,
-                ComponentFormat::F32 => gl::RG32F
+                ComponentFormat::U8  => glow::RG8,
+                ComponentFormat::U16 => glow::RG16UI,
+                ComponentFormat::U32 => glow::RG32UI,
+                ComponentFormat::I8  => glow::RG8I,
+                ComponentFormat::I16 => glow::RG16I,
+                ComponentFormat::I32 => glow::RG32I,
+                ComponentFormat::F16 => glow::RG16F,
+                ComponentFormat::F32 => glow::RG32F
             },
             ColorFormat::R => match component {
-                ComponentFormat::U8 => gl::R8,
-                ComponentFormat::U16 => gl::R16UI,
-                ComponentFormat::U32 => gl::R32UI,
-                ComponentFormat::I8 => gl::R8I,
-                ComponentFormat::I16 => gl::R16I,
-                ComponentFormat::I32 => gl::R32I,
-                ComponentFormat::F16 => gl::R16F,
-                ComponentFormat::F32 => gl::R32F
+                ComponentFormat::U8  => glow::R8,
+                ComponentFormat::U16 => glow::R16UI,
+                ComponentFormat::U32 => glow::R32UI,
+                ComponentFormat::I8  => glow::R8I,
+                ComponentFormat::I16 => glow::R16I,
+                ComponentFormat::I32 => glow::R32I,
+                ComponentFormat::F16 => glow::R16F,
+                ComponentFormat::F32 => glow::R32F
             }
         }
     }
