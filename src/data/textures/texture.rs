@@ -1,11 +1,7 @@
 use crate::Context;
-
-use crate::data::as_u8_slice;
-use crate::data::as_u8_mut_slice;
+use crate::TextureFormat;
 
 use glow::HasContext;
-
-use crate::TextureFormat;
 
 type TextureResource = <glow::Context as HasContext>::Texture;
 

@@ -36,7 +36,7 @@ impl<'context> Buffer<'context> {
         buffer
     }
 
-    fn bind(&self) {
+    pub(crate) fn bind(&self) {
         let gl = &self.context.gl;
         let resource = self.resource();
         let resource = if resource == Default::default() { None } else { Some(resource) };

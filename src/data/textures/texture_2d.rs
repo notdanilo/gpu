@@ -85,7 +85,7 @@ impl<'context> Texture2D<'context> {
         unsafe {
             data.set_len(capacity);
 
-            /// FIXME: Pre-create a transfer framebuffer in Context.
+            //FIXME: Pre-create a transfer framebuffer in Context.
             let fb = gl.create_framebuffer().expect("Couldn't create Framebuffer");
             gl.bind_framebuffer(glow::FRAMEBUFFER, Some(fb));
             gl.framebuffer_texture_2d(glow::FRAMEBUFFER,

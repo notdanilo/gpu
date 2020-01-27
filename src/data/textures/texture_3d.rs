@@ -85,7 +85,7 @@ impl<'context> Texture3D<'context> {
         unsafe {
             data.set_len(capacity);
 
-            /// FIXME: Pre-create a transfer framebuffer in Context.
+            //FIXME: Pre-create a transfer framebuffer in Context.
             let fb = gl.create_framebuffer().expect("Couldn't create Framebuffer");
 
             for depth in 0..depth {

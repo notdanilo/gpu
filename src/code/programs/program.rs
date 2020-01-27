@@ -8,11 +8,18 @@ use glow::HasContext;
 type ProgramResource = <glow::Context as HasContext>::Program;
 
 pub struct Program<'context> {
-    context  : &'context Context,
-    resource : ProgramResource
+    pub(crate) context : &'context Context,
+    resource           : ProgramResource
 }
 
 impl<'context> Program<'context> {
+    pub fn new(context:&'context Context) -> Self {
+        let resource = unsafe {
+            context.gl.create_program().expect("Couldn't create program")
+        };
+        Self {context,resource}
+    }
+
     pub fn resource(&self) -> ProgramResource { self.resource }
 
 //    fn bind_buffer(&mut self, buffer: &Buffer, index: u32) {
@@ -38,4 +45,12 @@ impl<'context> Program<'context> {
 //            gl::Uniform1i(index as i32, index as i32);
 //        }
 //    }
+}
+
+impl Drop for Program<'_> {
+    fn drop(&mut self) {
+        unsafe {
+            self.context.gl.delete_program(self.resource());
+        }
+    }
 }

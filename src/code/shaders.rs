@@ -1,9 +1,9 @@
 mod shader;
-mod vertexshader;
-mod fragmentshader;
+mod vertex_shader;
+mod fragment_shader;
 //mod computeshader;
 
 pub use shader::Shader;
-pub use vertexshader::VertexShader;
-pub use fragmentshader::FragmentShader;
+pub use vertex_shader::VertexShader;
+pub use fragment_shader::FragmentShader;
 //pub use computeshader::ComputeShader;

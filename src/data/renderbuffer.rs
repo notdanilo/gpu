@@ -15,16 +15,15 @@ impl<'context> Renderbuffer<'context> {
     }
 
     pub fn new(context:&'context Context, width: u32, height: u32) -> Self {
-        let gl           = &context.gl;
-        let mut resource = Default::default();
-        let width        = width as i32;
-        let height       = height as i32;
-        unsafe {
-            resource = gl.create_renderbuffer().expect("Couldn't create Renderbuffer");
+        let gl       = &context.gl;
+        let width    = width as i32;
+        let height   = height as i32;
+        let resource = unsafe {
+            let resource = gl.create_renderbuffer().expect("Couldn't create Renderbuffer");
             gl.bind_renderbuffer(glow::RENDERBUFFER, Some(resource));
             gl.renderbuffer_storage(glow::RENDERBUFFER, glow::DEPTH_COMPONENT, width, height);
-        }
-
+            resource
+        };
         Self {context,resource}
     }
 

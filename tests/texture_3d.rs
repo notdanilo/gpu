@@ -3,7 +3,7 @@ mod utils;
 //FIXME: Test all formats in TextureFormat!
 
 #[cfg(test)]
-mod texture3d {
+mod texture_3d {
     use super::utils::test;
 
     use gpu::ContextDisplay;
@@ -16,7 +16,7 @@ mod texture3d {
     #[test]
     fn allocation() {
         let context_builder = ContextBuilder::new().with_display(ContextDisplay::None);
-        let mut context = context_builder.build();
+        let context = context_builder.build();
 
         context.make_current().unwrap();
 
@@ -29,7 +29,7 @@ mod texture3d {
     #[test]
     fn from_data() {
         let context_builder = ContextBuilder::new().with_display(ContextDisplay::None);
-        let mut context = context_builder.build();
+        let context = context_builder.build();
 
         context.make_current().unwrap();
 

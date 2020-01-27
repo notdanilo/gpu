@@ -3,7 +3,7 @@ mod utils;
 //FIXME: Test all formats in TextureFormat!
 
 #[cfg(test)]
-mod texture2d {
+mod texture_2d {
     use super::utils::test;
 
     use gpu::ContextDisplay;

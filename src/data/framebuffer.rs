@@ -1,4 +1,4 @@
-//use crate::data::Texture2D;
+use crate::data::Texture2D;
 use crate::data::Renderbuffer;
 use crate::Context;
 use glow::HasContext;
@@ -6,7 +6,7 @@ use glow::HasContext;
 type FramebufferResource = <glow::Context as HasContext>::Framebuffer;
 
 enum FramebufferAttachment<'context> {
-//    Texture(Texture2D),
+    Texture(Texture2D<'context>),
     Renderbuffer(Renderbuffer<'context>),
     None
 }
@@ -29,13 +29,16 @@ pub struct Framebuffer<'context> {
 
 impl<'context> Framebuffer<'context> {
     pub fn default(context:&'context Context) -> Self {
-        let gl         = &context.gl;
         let dimensions = context.inner_dimensions();
         let resource   = Default::default();
         let color      = FramebufferAttachment::Renderbuffer(Renderbuffer::default(context));
         let _depth     = FramebufferAttachment::Renderbuffer(Renderbuffer::default(context));
         let _stencil   = FramebufferAttachment::Renderbuffer(Renderbuffer::default(context));
         Self {context,resource,dimensions,color,_depth,_stencil}
+    }
+
+    pub(crate) fn resource(&self) -> FramebufferResource {
+        self.resource
     }
 
     pub(crate) fn bind(&self) {
@@ -46,54 +49,50 @@ impl<'context> Framebuffer<'context> {
             gl.bind_framebuffer(glow::FRAMEBUFFER, resource);
         }
     }
-//    pub fn new(color: Option<Texture2D>, depth: Option<Texture2D>, stencil: Option<Texture2D>) -> Result<Self, String> {
-//        let mut id = 0;
-//        unsafe {
-//            gl::GenFramebuffers(1, &mut id);
-//            gl::BindFramebuffer(gl::FRAMEBUFFER, id);
-//        }
-//
-//        let mut dimension = (0, 0);
-//
-//        let color = match color {
-//            Some(texture) => {
-//                dimension = texture.get_dimension();
-//                unsafe {
-//                    gl::FramebufferTexture(gl::FRAMEBUFFER, gl::COLOR_ATTACHMENT0, texture.get_id(), 0);
-//                }
-//
-//                FramebufferAttachment::Texture(texture)
-//            },
-//            None => FramebufferAttachment::None
-//        };
-//        let depth = match depth {
-//            Some(texture) => FramebufferAttachment::Texture(texture),
-//            None => FramebufferAttachment::None
-//        };
-//        let stencil = match stencil {
-//            Some(texture) => FramebufferAttachment::Texture(texture),
-//            None => FramebufferAttachment::None
-//        };
-//
-//        Ok(Self {
-//            id,
-//            color,
-//            dimension,
-//            _depth : depth,
-//            _stencil : stencil
-//        })
-//    }
 
-    pub fn resource(&self) -> FramebufferResource { self.resource }
+    pub fn new
+    (context:&'context Context, color: Option<Texture2D<'context>>,
+     depth:Option<Texture2D<'context>>, stencil:Option<Texture2D<'context>>) -> Result<Self,
+        String> {
+        let gl       = &context.gl;
+        let resource = unsafe {
+            let resource = gl.create_framebuffer().expect("Couldn't create Framebuffer");
+            gl.bind_framebuffer(glow::FRAMEBUFFER, Some(resource));
+            resource
+        };
+        let mut dimensions = (0, 0);
+
+        let color = match color {
+            Some(texture) => {
+                dimensions = texture.dimensions();
+                unsafe {
+                    gl.framebuffer_texture_2d(glow::FRAMEBUFFER, glow::COLOR_ATTACHMENT0,
+                                              glow::TEXTURE_2D, Some(texture.resource()), 0);
+                }
+                FramebufferAttachment::Texture(texture)
+            },
+            None => FramebufferAttachment::None
+        };
+        let _depth = match depth {
+            Some(texture) => FramebufferAttachment::Texture(texture),
+            None => FramebufferAttachment::None
+        };
+        let _stencil = match stencil {
+            Some(texture) => FramebufferAttachment::Texture(texture),
+            None => FramebufferAttachment::None
+        };
+
+        Ok(Self {context,resource,dimensions,color,_depth,_stencil})
+    }
 
     pub fn dimensions(&self) -> (usize, usize) { self.dimensions }
 
-//    pub fn get_color(&self) -> Option<&Texture2D> {
-//        match &self.color {get_dimension
-//            FramebufferAttachment::Texture(texture) => Some(&texture),
-//            _ => None
-//        }
-//    }
+    pub fn color(&self) -> Option<&Texture2D> {
+        match &self.color {
+            FramebufferAttachment::Texture(texture) => Some(&texture),
+            _ => None
+        }
+    }
 }
 
 impl<'context> Drop for Framebuffer<'context> {
