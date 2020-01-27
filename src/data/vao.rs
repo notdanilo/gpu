@@ -1,35 +1,42 @@
-use crate::Resource;
 use crate::data::Buffer;
 
-pub struct VertexArrayObject {
-    id : u32,
-    vertices: u32
+use crate::Context;
+use glow::HasContext;
+
+type VertexArrayObjectResource = <glow::Context as HasContext>::VertexArray;
+
+pub struct VertexArrayObject<'context> {
+    context  : &'context Context,
+    resource : VertexArrayObjectResource,
+    vertices : u32
 }
 
-impl Resource for VertexArrayObject {
-    fn get_id(&self) -> u32 { self.id }
-}
-
-impl Default for VertexArrayObject {
-    fn default() -> Self {
-        let mut id = 0;
-        unsafe {
-            gl::GenVertexArrays(1, &mut id);
+impl<'context> VertexArrayObject<'context> {
+    pub fn new(context:&'context Context) -> Self {
+        let resource = unsafe {
+            context.gl.create_vertex_array().expect("Couldn't create VertexArrayObject")
         };
-
-        Self { id, vertices : 0 }
+        let vertices = 0;
+        Self {context,resource,vertices}
     }
-}
 
-impl VertexArrayObject {
-    pub fn new() -> Self { Default::default() }
+    pub(crate) fn resource(&self) -> VertexArrayObjectResource {
+        self.resource
+    }
+
+    pub(crate) fn bind(&self) {
+        unsafe {
+            self.context.gl.bind_vertex_array(Some(self.resource()));
+        }
+    }
 
     pub fn set_vertex_buffer(&mut self, buffer : &Buffer, index: u32, elements: u32) {
+        let gl = &self.context.gl;
+        self.bind();
+        buffer.bind();
         unsafe {
-            gl::BindVertexArray(self.id);
-            gl::BindBuffer(gl::ARRAY_BUFFER, buffer.get_id());
-            gl::EnableVertexAttribArray(index);
-            gl::VertexAttribPointer(index, elements as i32, gl::FLOAT, gl::FALSE, 0, std::ptr::null());
+            gl.enable_vertex_attrib_array(index);
+            gl.vertex_attrib_pointer_f32(index, elements as i32, glow::FLOAT, false, 0, 0);
         }
     }
 
@@ -37,7 +44,9 @@ impl VertexArrayObject {
         self.vertices = vertices;
     }
 
-    pub fn get_vertices(&self) -> u32 { self.vertices }
+    pub fn get_vertices(&self) -> u32 {
+        self.vertices
+    }
 
     // pub fn set_index_buffer(&mut self, buffer : &Buffer, elements: u32) {
     //     unsafe {
@@ -48,10 +57,10 @@ impl VertexArrayObject {
     // }
 }
 
-impl Drop for VertexArrayObject {
+impl Drop for VertexArrayObject<'_> {
     fn drop(&mut self) {
         unsafe {
-            gl::DeleteVertexArrays(1, &self.get_id());
+            self.context.gl.delete_vertex_array(self.resource());
         }
     }
 }

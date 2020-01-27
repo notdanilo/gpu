@@ -1,32 +1,35 @@
-use std::ffi::CString;
-use std::str;
-use std::ptr;
-use gl::types::*;
+use crate::Context;
+use glow::HasContext;
 
-use crate::Resource;
+type ShaderResource = <glow::Context as HasContext>::Shader;
 
-pub trait Shader : Resource {}
+pub struct Shader<'context> {
+    resource : ShaderResource,
+    context  : &'context Context
+}
 
-pub fn create_shader(shader_type : u32, source: &str) -> Result<u32, String> {
-    let id = unsafe { gl::CreateShader(shader_type) };
-    unsafe {
-        let c_str = CString::new(source.as_bytes()).unwrap();
+impl<'context> Shader<'context> {
+    pub fn new(context:&'context Context, shader_type:u32, source:&str) -> Result<Self, String> {
+        let gl       = &context.gl;
+        let resource = unsafe { gl.create_shader(shader_type)? };
+        unsafe {
+            gl.shader_source(resource, source);
+            gl.compile_shader(resource);
 
-        gl::ShaderSource(id, 1, &c_str.as_ptr(), ptr::null());
-        gl::CompileShader(id);
+            if !gl.get_shader_compile_status(resource) {
+                return Err(gl.get_shader_info_log(resource));
+            }
+        }
+        Ok(Self {resource,context})
+    }
 
-        let mut success = i32::from(gl::FALSE);
-        gl::GetShaderiv(id, gl::COMPILE_STATUS, &mut success);
+    pub fn resource(&self) -> ShaderResource { self.resource }
+}
 
-        if success != i32::from(gl::TRUE) {
-            let mut len = 0;
-            gl::GetShaderiv(id, gl::INFO_LOG_LENGTH, &mut len);
-            let mut info_log = Vec::with_capacity(len as usize);
-            info_log.set_len((len as usize) - 1); // -1 to skip trialing null character
-
-            gl::GetShaderInfoLog(id, len, ptr::null_mut(), info_log.as_mut_ptr() as *mut GLchar);
-            return Err(String::from_utf8(info_log).unwrap());
+impl<'context> Drop for Shader<'context> {
+    fn drop(&mut self) {
+        unsafe {
+            self.context.gl.delete_shader(self.resource());
         }
     }
-    Ok(id)
 }

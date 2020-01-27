@@ -1,6 +1,6 @@
 mod texture;
-mod texture2d;
-mod texture3d;
+mod texture_2d;
+mod texture_3d;
 mod sampler;
 
 mod colorformat;
@@ -14,5 +14,5 @@ pub use componentformat::ComponentFormat;
 pub use textureformat::TextureFormat;
 
 pub use texture::Texture;
-pub use texture2d::Texture2D;
-pub use texture3d::Texture3D;
+pub use texture_2d::Texture2D;
+pub use texture_3d::Texture3D;

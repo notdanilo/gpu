@@ -1,34 +1,56 @@
-use crate::data::Buffer;
-use crate::data::Texture;
-use crate::data::Sampler;
+//use crate::data::Buffer;
+//use crate::data::Texture;
+//use crate::data::Sampler;
 
-use crate::Resource;
+use crate::Context;
+use glow::HasContext;
 
-pub trait Program {
-    fn get_id(&self) -> u32;
+type ProgramResource = <glow::Context as HasContext>::Program;
 
-    fn bind_buffer(&mut self, buffer: &Buffer, index: u32) {
-        unsafe {
-            gl::BindBufferBase(gl::SHADER_STORAGE_BUFFER, index, buffer.get_id());
-        }
+pub struct Program<'context> {
+    pub(crate) context : &'context Context,
+    resource           : ProgramResource
+}
+
+impl<'context> Program<'context> {
+    pub fn new(context:&'context Context) -> Self {
+        let resource = unsafe {
+            context.gl.create_program().expect("Couldn't create program")
+        };
+        Self {context,resource}
     }
-    fn bind_texture(&mut self, texture: &dyn Texture, sampler: &Sampler, index:
-    u32) {
+
+    pub fn resource(&self) -> ProgramResource { self.resource }
+
+//    fn bind_buffer(&mut self, buffer: &Buffer, index: u32) {
+//        unsafe {
+//            self::BindBufferBase(gl::SHADER_STORAGE_BUFFER, index, buffer.get_id());
+//        }
+//    }
+//    fn bind_texture(&mut self, texture:&dyn Texture, sampler:&Sampler, index:u32) {
+//        unsafe {
+//            gl::ActiveTexture(gl::TEXTURE0 + index);
+//            gl::BindTexture(texture.get_type(), texture.get_id());
+//            gl::BindSampler(index, sampler.get_id());
+//            gl::UseProgram(self.get_id());
+//            gl::Uniform1i(index as i32, index as i32);
+//        }
+//    }
+//    fn bind_image(&mut self, texture: &dyn Texture, index: u32) {
+//        unsafe {
+//            gl::UseProgram(self.get_id());
+//            gl::ActiveTexture(gl::TEXTURE0 + index);
+//            gl::BindTexture(texture.get_type(), texture.get_id());
+//            gl::BindImageTexture(index, texture.get_id(), 0, gl::FALSE, 0, gl::WRITE_ONLY, texture.get_format().get_internal_format());
+//            gl::Uniform1i(index as i32, index as i32);
+//        }
+//    }
+}
+
+impl Drop for Program<'_> {
+    fn drop(&mut self) {
         unsafe {
-            gl::ActiveTexture(gl::TEXTURE0 + index);
-            gl::BindTexture(texture.get_type(), texture.get_id());
-            gl::BindSampler(index, sampler.get_id());
-            gl::UseProgram(self.get_id());
-            gl::Uniform1i(index as i32, index as i32);
-        }
-    }
-    fn bind_image(&mut self, texture: &dyn Texture, index: u32) {
-        unsafe {
-            gl::UseProgram(self.get_id());
-            gl::ActiveTexture(gl::TEXTURE0 + index);
-            gl::BindTexture(texture.get_type(), texture.get_id());
-            gl::BindImageTexture(index, texture.get_id(), 0, gl::FALSE, 0, gl::WRITE_ONLY, texture.get_format().get_internal_format());
-            gl::Uniform1i(index as i32, index as i32);
+            self.context.gl.delete_program(self.resource());
         }
     }
 }
