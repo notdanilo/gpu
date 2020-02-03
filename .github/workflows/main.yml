@@ -44,6 +44,8 @@ jobs:
 #          command: test
 #      - name: Check Google Chrome version
 #        run: chrome --version && chromedriver --version
+      - name: Chromedriver version
+        run: chromedriver --version
       - name: Run wasm-pack tests
         run: wasm-pack test --headless --chrome
 #        uses: actions-rs/cargo@v1
