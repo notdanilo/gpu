@@ -16,7 +16,7 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 #glow         = "0.4.0"
-glow         = { path = "../glow" }
+glow         = { git = "https://github.com/grovesNL/glow/" }
 shrinkwraprs = "0.3.0"
 
 [target.'cfg(not(any(target_arch = "wasm32")))'.dependencies]
