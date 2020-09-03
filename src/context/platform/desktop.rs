@@ -52,6 +52,10 @@ impl Context {
 
         context.hide_cursor(!builder.cursor);
 
+        unsafe {
+            context.make_current().expect("Context make current failed.");
+        }
+
         let gl = glow::Context::from_loader_function(|s| {
             context.get_proc_address(s) as *const _
         });
