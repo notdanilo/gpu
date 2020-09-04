@@ -48,6 +48,7 @@ impl<'context> VertexArrayObject<'context> {
         self.vertices
     }
 
+    // TODO:
     // pub fn set_index_buffer(&mut self, buffer : &Buffer, elements: u32) {
     //     unsafe {
     //         gl::BindVertexArray(self.id);
