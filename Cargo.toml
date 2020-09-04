@@ -24,4 +24,4 @@ web_sys      = { version = "0.3", package = "web-sys",features = ["console","Doc
 wasm-bindgen = { version = "0.2" }
 
 [target.'cfg(target_arch = "wasm32")'.dev-dependencies]
-wasm-bindgen-test = "0.2"
+wasm-bindgen-test = "0.3.17"
