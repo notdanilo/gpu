@@ -12,7 +12,7 @@
 
 mod prelude;
 
-pub mod context;
+mod context;
 mod data;
 mod code;
 
