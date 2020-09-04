@@ -95,7 +95,7 @@ impl<'context> Texture2D<'context> {
                                       0);
 
             let (format, ty) = self.format().get_format_type();
-            let pixels       = as_u8_mut_slice(data.as_mut());
+            let pixels       = glow::PixelPackData::Slice(as_u8_mut_slice(data.as_mut()));
             let (width, height) = self.dimensions();
             gl.read_pixels(0, 0, width as i32, height as i32, format, ty, pixels);
 

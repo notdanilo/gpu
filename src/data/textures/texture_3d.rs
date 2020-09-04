@@ -98,7 +98,7 @@ impl<'context> Texture3D<'context> {
 
                 let (format, ty) = self.format().get_format_type();
                 let offset = width * height * depth * color_size;
-                let pixels = &mut as_u8_mut_slice(data.as_mut())[offset..];
+                let pixels = glow::PixelPackData::Slice(&mut as_u8_mut_slice(data.as_mut())[offset..]);
                 let (width, height, _) = self.dimensions();
                 gl.read_pixels(0, 0, width as i32, height as i32, format, ty, pixels);
             }
