@@ -5,6 +5,7 @@ use glow::HasContext;
 
 type VertexArrayObjectResource = <glow::Context as HasContext>::VertexArray;
 
+/// `VertexArrayObject` representation.
 pub struct VertexArrayObject<'context> {
     context  : &'context Context,
     resource : VertexArrayObjectResource,
@@ -12,6 +13,7 @@ pub struct VertexArrayObject<'context> {
 }
 
 impl<'context> VertexArrayObject<'context> {
+    /// Creates a new `VertexArrayObject`.
     pub fn new(context:&'context Context) -> Self {
         let resource = unsafe {
             context.gl.create_vertex_array().expect("Couldn't create VertexArrayObject")
@@ -30,20 +32,23 @@ impl<'context> VertexArrayObject<'context> {
         }
     }
 
-    pub fn set_vertex_buffer(&mut self, buffer : &Buffer, index: u32, elements: u32) {
+    /// Sets a `Buffer` as a vertices sources, where each vertex has `n_elements`
+    pub fn set_vertex_buffer(&mut self, buffer : &Buffer, attribute_index: u32, n_elements: u32) {
         let gl = &self.context.gl;
         self.bind();
         buffer.bind();
         unsafe {
-            gl.enable_vertex_attrib_array(index);
-            gl.vertex_attrib_pointer_f32(index, elements as i32, glow::FLOAT, false, 0, 0);
+            gl.enable_vertex_attrib_array(attribute_index);
+            gl.vertex_attrib_pointer_f32(attribute_index, n_elements as i32, glow::FLOAT, false, 0, 0);
         }
     }
 
+    /// Sets the number of vertices.
     pub fn set_vertices(&mut self, vertices : u32) {
         self.vertices = vertices;
     }
 
+    /// Gets the number of vertices.
     pub fn get_vertices(&self) -> u32 {
         self.vertices
     }

@@ -1,3 +1,4 @@
+use crate::prelude::*;
 use crate::Context;
 
 use crate::data::as_u8_slice;
@@ -7,14 +8,15 @@ use glow::HasContext;
 
 use crate::TextureFormat;
 use crate::ColorFormat;
-use crate::ComponentFormat;
+use crate::Type;
 use crate::Texture;
 
-use shrinkwraprs::Shrinkwrap;
 
+/// A `Texture2D` representation.
 #[derive(Shrinkwrap)]
 #[shrinkwrap(mutable)]
 pub struct Texture2D<'context> {
+    /// Base texture object.
     #[shrinkwrap(main_field)]
     pub texture : Texture<'context>,
     dimensions : (usize,usize)
@@ -22,16 +24,18 @@ pub struct Texture2D<'context> {
 
 impl<'context> Texture2D<'context> {
     fn new(context:&'context Context) -> Self {
-        let format     = TextureFormat::new(ColorFormat::RGBA, ComponentFormat::F32);
+        let format     = TextureFormat::new(ColorFormat::RGBA, Type::F32);
         let texture    = Texture::new(context,format,glow::TEXTURE_2D);
         let dimensions = (0,0);
         Self {texture,dimensions}
     }
 
+    /// Gets the dimensions.
     pub fn dimensions(&self) -> (usize, usize) {
         self.dimensions
     }
 
+    /// Allocates a new `Texture2D` with the specified dimensions and `TextureFormat`.
     pub fn allocate
     (context:&'context Context, dimension:(usize,usize), format:&TextureFormat) -> Self {
         let mut texture = Self::new(context);
@@ -39,6 +43,7 @@ impl<'context> Texture2D<'context> {
         texture
     }
 
+    /// Creates a new `Texture2D` from a slice.
     pub fn from_data<T>
     ( context:&'context Context
     , dimension:(usize,usize)
@@ -50,6 +55,7 @@ impl<'context> Texture2D<'context> {
         texture
     }
 
+    /// Reallocates the memory on the GPU side.
     pub fn reallocate(&mut self, dimensions: (usize, usize), format: &TextureFormat) {
         self.dimensions = dimensions;
         let gl          = &self.context.gl;
@@ -57,11 +63,12 @@ impl<'context> Texture2D<'context> {
         self.bind();
         unsafe {
             let tex_type        = self.typ();
-            let internal_format = format.get_internal_format();
+            let internal_format = format.internal_format();
             gl.tex_storage_2d(tex_type, 1, internal_format, dimensions.0 as i32, dimensions.1 as i32);
         }
     }
 
+    /// Gets a copy of the data on the GPU.
     pub fn set_data<T>(&mut self, dimensions: (usize, usize), format: &TextureFormat, data: &[T], data_format: &TextureFormat) {
         self.dimensions = dimensions;
         let gl          = &self.context.gl;
@@ -69,7 +76,7 @@ impl<'context> Texture2D<'context> {
         self.bind();
         unsafe {
             let (color, ty)     = data_format.get_format_type();
-            let internal_format = format.get_internal_format() as i32;
+            let internal_format = format.internal_format() as i32;
             let width           = dimensions.0 as i32;
             let height          = dimensions.1 as i32;
             let pixels          = Some(as_u8_slice(data));
@@ -77,10 +84,11 @@ impl<'context> Texture2D<'context> {
         }
     }
 
-    pub fn get_data<T>(&self) -> Vec<T> {
+    /// Gets a copy of the data on the GPU.
+    pub fn data<T>(&self) -> Vec<T> {
         let gl                = &self.context.gl;
         let (width,height)    = self.dimensions();
-        let capacity          = width * height * self.format().get_color_format().get_size();
+        let capacity          = width * height * self.format().color_format().size();
         let mut data : Vec<T> = Vec::with_capacity(capacity);
         unsafe {
             data.set_len(capacity);

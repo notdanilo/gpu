@@ -3,12 +3,14 @@ use glow::HasContext;
 
 type ShaderResource = <glow::Context as HasContext>::Shader;
 
+/// A shader representation.
 pub struct Shader<'context> {
     resource : ShaderResource,
     context  : &'context Context
 }
 
 impl<'context> Shader<'context> {
+    /// Creates a new `Shader`.
     pub fn new(context:&'context Context, shader_type:u32, source:&str) -> Result<Self, String> {
         let gl       = &context.gl;
         let resource = unsafe { gl.create_shader(shader_type)? };
@@ -23,6 +25,7 @@ impl<'context> Shader<'context> {
         Ok(Self {resource,context})
     }
 
+    /// Gets the `ShaderResource`.
     pub fn resource(&self) -> ShaderResource { self.resource }
 }
 

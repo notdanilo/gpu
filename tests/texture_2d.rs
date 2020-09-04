@@ -11,7 +11,7 @@ mod texture_2d {
     use gpu::Texture2D;
     use gpu::TextureFormat;
     use gpu::ColorFormat;
-    use gpu::ComponentFormat;
+    use gpu::Type;
 
     #[test]
     fn allocation() {
@@ -21,7 +21,7 @@ mod texture_2d {
         context.make_current().unwrap();
 
         let dimension = (123, 321);
-        let texture = Texture2D::allocate(&context, dimension, &TextureFormat(ColorFormat::RGBA, ComponentFormat::U8));
+        let texture = Texture2D::allocate(&context, dimension, &TextureFormat(ColorFormat::RGBA, Type::U8));
         assert_eq!(texture.dimensions(), dimension);
     }
 
@@ -44,14 +44,14 @@ mod texture_2d {
         }
 
         let data_in_format = TextureFormat(ColorFormat::components(components),
-                                           ComponentFormat::U8);
+                                           Type::U8);
         let texture = Texture2D::from_data(&context, dimension, &data_in_format, &data_in,
                                            &data_in_format);
 
-        assert_eq!(components, texture.format().get_color_format().get_size());
+        assert_eq!(components, texture.format().color_format().size());
         assert_eq!(dimension, texture.dimensions());
 
-        let data_out = texture.get_data();
+        let data_out = texture.data();
 
         assert_eq!(data_in, data_out);
     }

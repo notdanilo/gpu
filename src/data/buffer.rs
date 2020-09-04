@@ -7,6 +7,7 @@ type BufferResource = <glow::Context as HasContext>::Buffer;
 use super::as_u8_mut_slice;
 use super::as_u8_slice;
 
+/// A `Buffer` representation.
 pub struct Buffer<'context> {
     context  : &'context Context,
     resource : BufferResource
@@ -20,19 +21,22 @@ impl<'context> Buffer<'context> {
         Buffer {context,resource}
     }
 
+    /// Gets the `BufferResource`.
     pub fn resource(&self) -> BufferResource {
         self.resource
     }
 
+    /// Creates a new `Buffer` from a slice.
     pub fn from_data<T>(context:&'context Context, data: &[T]) -> Buffer<'context> {
         let mut buffer = Buffer::new(context);
         buffer.set_data(data);
         buffer
     }
 
-    pub fn allocate(context:&'context Context, size:usize) -> Buffer<'context> {
+    /// Allocates a new `Buffer` with `n_bytes`.
+    pub fn allocate(context:&'context Context, n_bytes:usize) -> Buffer<'context> {
         let mut buffer = Buffer::new(context);
-        if size > 0 { buffer.reallocate(size); }
+        if n_bytes > 0 { buffer.reallocate(n_bytes); }
         buffer
     }
 
@@ -45,7 +49,8 @@ impl<'context> Buffer<'context> {
         }
     }
 
-    pub fn get_size(&self) -> usize {
+    /// Gets the size in bytes.
+    pub fn size(&self) -> usize {
         let gl = &self.context.gl;
         self.bind();
         unsafe {
@@ -53,6 +58,7 @@ impl<'context> Buffer<'context> {
         }
     }
 
+    /// Sets the data on the GPU side.
     pub fn set_data<T>(&mut self, data: &[T]) {
         let gl = &self.context.gl;
         self.bind();
@@ -62,11 +68,12 @@ impl<'context> Buffer<'context> {
         }
     }
 
-    pub fn get_data<T>(&self) -> Vec<T> {
+    /// Gets the data on the GPU side.
+    pub fn data<T>(&self) -> Vec<T> {
         let gl = &self.context.gl;
         self.bind();
 
-        let size = self.get_size();
+        let size = self.size();
         let capacity = size / std::mem::size_of::<T>();
         let mut data : Vec<T> = Vec::with_capacity(capacity);
         unsafe {
@@ -78,6 +85,7 @@ impl<'context> Buffer<'context> {
         data
     }
 
+    /// Reallocates the memory with `size`.
     pub fn reallocate(&mut self, size: usize) {
         let gl = &self.context.gl;
         self.bind();

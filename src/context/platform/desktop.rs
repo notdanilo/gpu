@@ -10,13 +10,16 @@ use glutin::ContextTrait;
 // === Context ===
 // ===============
 
+/// GPU `Context` representation.
 pub struct Context {
-    events_loop : glutin::EventsLoop,
-    context     : glutin::WindowedContext,
-    pub gl      : glow::Context
+    events_loop   : glutin::EventsLoop,
+    context       : glutin::WindowedContext,
+    /// TODO: We want more backend support such as Vulkan.
+    pub(crate) gl : glow::Context
 }
 
 impl Context {
+    /// Creates a new `Context`.
     pub fn new(builder:&ContextBuilder) -> Self {
         let events_loop = glutin::EventsLoop::new();
         let mut window_builder = glutin::WindowBuilder::new();
@@ -63,7 +66,7 @@ impl Context {
         Self{events_loop,context,gl}
     }
 
-
+    /// Runs the `Context` and returns `false` if the `Context` is no longer available.
     pub fn run(&mut self) -> bool {
         let events_loop = &mut self.events_loop;
         let context = &mut self.context;
@@ -83,6 +86,7 @@ impl Context {
         available
     }
 
+    /// Makes the `Context` current for the current thread.
     pub fn make_current(&self) -> Result<(), ContextError> {
         unsafe {
             self.context.make_current()
@@ -90,14 +94,17 @@ impl Context {
         }
     }
 
+    /// Swap buffers for presenting in the `ContextDisplay`.
     pub fn swap_buffers(&self) -> Result<(), ContextError> {
         self.context.swap_buffers()
     }
 
+    /// OpenGL function dynamic loading.
     pub fn get_proc_address(&self, addr: &str) -> *const () {
         self.context.get_proc_address(addr)
     }
 
+    /// Gets the inner dimensions of the `ContextDisplay`.
     pub fn inner_dimensions(&self) -> (usize, usize) {
         let dpi      = self.context.get_hidpi_factor();
         let logical  = self.context.get_inner_size().expect("Couldn't get inner size");

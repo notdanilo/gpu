@@ -11,6 +11,7 @@ enum FramebufferAttachment<'context> {
     None
 }
 
+/// A Framebuffer representation with optional `color`, `depth` and `stencil` attachments.
 pub struct Framebuffer<'context> {
     context    : &'context Context,
     resource   : FramebufferResource,
@@ -28,6 +29,7 @@ pub struct Framebuffer<'context> {
 // 5. Check attachment dimensions (does framebuffer completeness check takes that into account?)
 
 impl<'context> Framebuffer<'context> {
+    /// The default `Framebuffer` created during the `Context` creation.
     pub fn default(context:&'context Context) -> Self {
         let dimensions = context.inner_dimensions();
         let resource   = Default::default();
@@ -50,6 +52,7 @@ impl<'context> Framebuffer<'context> {
         }
     }
 
+    /// Creates a new `Framebuffer` with optional `color`, `depth` and `stencil`.
     pub fn new
     (context:&'context Context, color: Option<Texture2D<'context>>,
      depth:Option<Texture2D<'context>>, stencil:Option<Texture2D<'context>>) -> Result<Self,
@@ -85,8 +88,10 @@ impl<'context> Framebuffer<'context> {
         Ok(Self {context,resource,dimensions,color,_depth,_stencil})
     }
 
+    /// Gets the `Framebuffer`'s dimension.
     pub fn dimensions(&self) -> (usize, usize) { self.dimensions }
 
+    /// Returns the `Texture2D` used as the `ColorBuffer` if any.
     pub fn color(&self) -> Option<&Texture2D> {
         match &self.color {
             FramebufferAttachment::Texture(texture) => Some(&texture),

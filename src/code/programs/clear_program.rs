@@ -3,6 +3,13 @@ use crate::Framebuffer;
 use crate::Context;
 use glow::HasContext;
 
+
+
+// ====================
+// === ClearProgram ===
+// ====================
+
+/// A program that clears colors, depth and stencil of a `framebuffer`.
 pub struct ClearProgram<'context> {
     context : &'context Context,
     color : (f32, f32, f32, f32),
@@ -11,10 +18,14 @@ pub struct ClearProgram<'context> {
 }
 
 impl<'context> ClearProgram<'context> {
+    /// Color buffer bit.
     pub const COLOR   : u32 = glow::COLOR_BUFFER_BIT;
+    /// Depth buffer bit.
     pub const DEPTH   : u32 = glow::DEPTH_BUFFER_BIT;
+    /// Stencil buffer bit.
     pub const STENCIL : u32 = glow::STENCIL_BUFFER_BIT;
 
+    /// Creates a new `ClearProgram`.
     pub fn new(context:&'context Context) -> Self {
         let color = (0.0, 0.0, 0.0, 0.0);
         let depth = 1.0; // is it default?
@@ -22,23 +33,34 @@ impl<'context> ClearProgram<'context> {
         Self {context,color,depth,stencil}
     }
 
+    /// Sets the color clear value.
     pub fn set_color(&mut self, color: (f32, f32, f32, f32)) { self.color = color; }
+    /// Gets the color clear value.
     pub fn color(&self) -> (f32, f32, f32, f32) { self.color }
 
+    /// Sets the depth clear value.
     pub fn set_depth(&mut self, depth: f32) { self.depth = depth; }
+    /// Gets the depth clear value.
     pub fn depth(&self) -> f32 { self.depth }
 
+    /// Sets the stencil clear value.
     pub fn set_stencil(&mut self, stencil: i32) { self.stencil = stencil; }
+    /// Gets the stencil clear value.
     pub fn stencil(&self) -> i32 { self.stencil }
 
-    pub fn clear(&self, framebuffer:&'context mut Framebuffer<'_>, mask: u32) {
+    /// Clear the target `Framebuffer` using the buffer bit mask.
+    /// Here is an example that clears color, depth and stencil in a single call:
+    /// ```rust,ignore
+    /// clear(framebuffer, ClearProgram::COLOR | ClearProgram::DEPTH | ClearProgram::STENCIL)
+    /// ```
+    pub fn clear(&self, framebuffer:&'context mut Framebuffer<'_>, clear_mask: u32) {
         let gl = &self.context.gl;
         unsafe {
             framebuffer.bind();
             gl.clear_color(self.color.0, self.color.1, self.color.2, self.color.3);
             gl.clear_depth_f32(self.depth);
             gl.clear_stencil(self.stencil);
-            gl.clear(mask);
+            gl.clear(clear_mask);
         }
     }
 }

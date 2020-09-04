@@ -1,3 +1,4 @@
+use crate::prelude::*;
 use crate::Context;
 
 use glow::HasContext;
@@ -8,21 +9,25 @@ use crate::VertexShader;
 use crate::VertexArrayObject;
 use crate::Framebuffer;
 
-use shrinkwraprs::Shrinkwrap;
-
+/// A program for rasterizing `VertexArrayObject`s in a target `Framebuffer`.
 #[derive(Shrinkwrap)]
 #[shrinkwrap(mutable)]
 pub struct RasterProgram<'context> {
+    /// Program base object.
     #[shrinkwrap(main_field)]
     pub program : Program<'context>,
 }
 
+/// Kinds of raster geometries.
 pub enum RasterGeometry {
+    /// Raster three consecutive vertices as a triangle.
     Triangles = glow::TRIANGLES as isize,
+    /// Raster each vertex as a point.
     Points    = glow::POINTS as isize
 }
 
 impl<'context> RasterProgram<'context> {
+    /// Creates a new `RasterProgram` with a `FragmentShader` and ` VertexShader`.
     pub fn new(context:&'context Context, fragment_shader:&FragmentShader, vertex_shader:&VertexShader) -> Result<Self, String> {
         let program = Program::new(context);
         let gl      = &context.gl;
@@ -46,16 +51,17 @@ impl<'context> RasterProgram<'context> {
         }
     }
 
-    pub fn raster(&self, framebuffer: &Framebuffer, vao: &VertexArrayObject, geometry : RasterGeometry, elements: u32) {
+    /// Draws the `n_vertices` in a `VertexArrayObject` as the specified `RasterGeometry` on the target `Framebuffer`.
+    pub fn raster(&self, framebuffer: &Framebuffer, vertex_array_object: &VertexArrayObject, raster_geometry: RasterGeometry, n_vertices: u32) {
         let gl = &self.context.gl;
         unsafe {
             framebuffer.bind();
             self.use_();
-            vao.bind();
+            vertex_array_object.bind();
             gl.enable(glow::PROGRAM_POINT_SIZE);
             let (width,height) = framebuffer.dimensions();
             gl.viewport(0, 0, width as i32, height as i32);
-            gl.draw_arrays(geometry as u32, 0, elements as i32);
+            gl.draw_arrays(raster_geometry as u32, 0, n_vertices as i32);
         }
     }
 }
