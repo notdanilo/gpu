@@ -37,6 +37,10 @@ impl Context {
             .body()
             .expect("Couldn't get body");
         body.append_with_node_1(&canvas).expect("Couldn't append canvas");
+        Self::from_canvas(canvas)
+    }
+
+    pub fn from_canvas(canvas: web_sys::HtmlCanvasElement) -> Self {
         let webgl2_context = canvas
             .get_context("webgl2")
             .expect("get_context failed")

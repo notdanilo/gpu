@@ -81,4 +81,10 @@ impl ContextBuilder {
     pub fn build(self) -> Context {
         Context::new(&self)
     }
+
+    /// Creates a new `Context` from a `web_sys::HtmlCanvasElement` with all the parameters
+    /// specified in the `ContextBuilder`.
+    pub fn build_from_canvas(self, canvas: web_sys::HtmlCanvasElement) -> Context {
+        Context::from_canvas(canvas)
+    }
 }
