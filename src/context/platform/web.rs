@@ -1,8 +1,8 @@
+#![allow(missing_docs)]
+
 use crate::context::ContextBuilder;
-use crate::context::ContextDisplay;
 
 use web_sys::HtmlCanvasElement;
-use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 
 
@@ -23,7 +23,7 @@ pub struct Context {
 }
 
 impl Context {
-    pub fn new(builder:&ContextBuilder) -> Self {
+    pub fn new(_builder:&ContextBuilder) -> Self {
         let document = web_sys::window()
             .expect("Couldn't get window")
             .document()
@@ -31,7 +31,7 @@ impl Context {
         let canvas = document
             .create_element("canvas")
             .expect("Couldn't create canvas")
-            .dyn_into::<web_sys::HtmlCanvasElement>()
+            .dyn_into::<HtmlCanvasElement>()
             .expect("Couldn't convert HtmlCanvasElement");
         let body = document
             .body()
@@ -40,7 +40,7 @@ impl Context {
         Self::from_canvas(canvas)
     }
 
-    pub fn from_canvas(canvas: web_sys::HtmlCanvasElement) -> Self {
+    pub fn from_canvas(canvas: HtmlCanvasElement) -> Self {
         let webgl2_context = canvas
             .get_context("webgl2")
             .expect("get_context failed")
@@ -63,7 +63,7 @@ impl Context {
         Ok(())
     }
 
-    pub fn get_proc_address(&self, addr: &str) -> *const () {
+    pub fn get_proc_address(&self, _addr: &str) -> *const () {
         std::ptr::null()
     }
 
