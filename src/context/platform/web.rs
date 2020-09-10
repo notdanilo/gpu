@@ -4,8 +4,8 @@ use crate::context::ContextBuilder;
 
 use web_sys::HtmlCanvasElement;
 use wasm_bindgen::JsCast;
-
-
+use std::rc::{Rc, Weak};
+use std::cell::RefCell;
 
 // ===============
 // === Context ===
@@ -17,12 +17,32 @@ use wasm_bindgen::JsCast;
 // based render loop and remove the method `run`? How to make it far more generalized and
 // consider a loop for when the Context doesn't need to swap buffers and is only used for computing?
 
-pub struct Context {
+pub struct ContextData {
     pub(crate) gl : glow::Context,
     canvas        : HtmlCanvasElement
 }
 
+pub struct WeakContext {
+    pub(crate) data : Weak<RefCell<ContextData>>
+}
+
+impl WeakContext {
+    pub fn upgrade(&self) -> Option<Context> {
+        self.data.upgrade().map(|data| {
+            Context { data }
+        })
+    }
+}
+
+pub struct Context {
+    pub data : Rc<RefCell<ContextData>>
+}
+
 impl Context {
+    pub fn weak(&self) -> WeakContext {
+        WeakContext { data: Rc::downgrade(&self.data) }
+    }
+
     pub fn new(_builder:&ContextBuilder) -> Self {
         let document = web_sys::window()
             .expect("Couldn't get window")
@@ -48,7 +68,8 @@ impl Context {
             .dyn_into::<web_sys::WebGl2RenderingContext>()
             .expect("Couldn't convert WebGl2RenderingContext");
         let gl = glow::Context::from_webgl2_context(webgl2_context);
-        Self {gl,canvas}
+        let data = Rc::new(RefCell::new(ContextData {gl,canvas}));
+        Self { data }
     }
 
     pub fn run(&mut self) -> bool {
@@ -68,6 +89,6 @@ impl Context {
     }
 
     pub fn inner_dimensions(&self) -> (usize, usize) {
-        (self.canvas.width() as usize, self.canvas.height() as usize)
+        (self.data.borrow().canvas.width() as usize, self.data.borrow().canvas.height() as usize)
     }
 }

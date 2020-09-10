@@ -3,17 +3,17 @@
 #[cfg(not(all(target_arch = "wasm32")))]
 mod platform {
     mod desktop;
-    pub use desktop::Context;
+    pub use desktop::*;
 }
 
 #[cfg(all(target_arch = "wasm32"))]
 mod platform {
     mod web;
-    pub use web::Context;
+    pub use web::*;
 }
 
 /// The Context object.
-pub use platform::Context;
+pub use platform::*;
 
 // ======================
 // === ContextDisplay ===

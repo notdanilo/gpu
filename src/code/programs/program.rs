@@ -2,23 +2,24 @@
 //use crate::data::Texture;
 //use crate::data::Sampler;
 
-use crate::Context;
+use crate::{Context, WeakContext};
 use glow::HasContext;
 
 type ProgramResource = <glow::Context as HasContext>::Program;
 
 /// A structure representing a GPU program.
-pub struct Program<'context> {
-    pub(crate) context : &'context Context,
+pub struct Program {
+    pub(crate) context : WeakContext,
     resource           : ProgramResource
 }
 
-impl<'context> Program<'context> {
+impl Program {
     /// Creates a new `Program`.
-    pub fn new(context:&'context Context) -> Self {
+    pub fn new(context: &Context) -> Self {
         let resource = unsafe {
-            context.gl.create_program().expect("Couldn't create program")
+            context.data.borrow().gl.create_program().expect("Couldn't create program")
         };
+        let context = context.weak();
         Self {context,resource}
     }
 
@@ -51,10 +52,12 @@ impl<'context> Program<'context> {
 //    }
 }
 
-impl Drop for Program<'_> {
+impl Drop for Program {
     fn drop(&mut self) {
-        unsafe {
-            self.context.gl.delete_program(self.resource());
-        }
+        self.context.upgrade().map(|context| {
+            unsafe {
+                context.data.borrow().gl.delete_program(self.resource());
+            }
+        });
     }
 }

@@ -1,21 +1,21 @@
 //FIXME: Create Wrap struct and Filter struct.
 
-use crate::Context;
+use crate::{Context, WeakContext};
 
 use glow::HasContext;
 
 type SamplerResource = <glow::Context as HasContext>::Sampler;
 
 /// A `Sampler` is responsible for sampling values from a texture. It supports filtering and coordinates wrapping.
-pub struct Sampler<'context> {
-    context  : &'context Context,
+pub struct Sampler {
+    context  : WeakContext,
     resource : SamplerResource
 }
 
-impl<'context> Sampler<'context> {
+impl Sampler {
     /// Creates a new `Sampler` with default wrapping as `REPEAT` and filtering as `NEAREST`.
-    pub fn new(context:&'context Context) -> Self {
-        let gl = &context.gl;
+    pub fn new(context:&Context) -> Self {
+        let gl = &context.data.borrow().gl;
         let resource = unsafe {
             let resource = gl.create_sampler().expect("Couldn't create sampler");
             gl.sampler_parameter_i32(resource, glow::TEXTURE_WRAP_S, glow::REPEAT as i32);
@@ -24,6 +24,7 @@ impl<'context> Sampler<'context> {
             gl.sampler_parameter_i32(resource, glow::TEXTURE_MAG_FILTER, glow::NEAREST as i32);
             resource
         };
+        let context = context.weak();
         Self {context,resource}
     }
 
@@ -33,10 +34,12 @@ impl<'context> Sampler<'context> {
     }
 }
 
-impl Drop for Sampler<'_> {
+impl Drop for Sampler {
     fn drop(&mut self) {
-        unsafe {
-            self.context.gl.delete_sampler(self.resource());
-        }
+        self.context.upgrade().map(|context| {
+            unsafe {
+                context.data.borrow().gl.delete_sampler(self.resource());
+            }
+        });
     }
 }

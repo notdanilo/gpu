@@ -1,4 +1,4 @@
-use crate::Context;
+use crate::{Context, WeakContext};
 use crate::TextureFormat;
 
 use glow::HasContext;
@@ -6,19 +6,21 @@ use glow::HasContext;
 type TextureResource = <glow::Context as HasContext>::Texture;
 
 /// A `Texture` representation.
-pub struct Texture<'context> {
-    pub(crate) context : &'context Context,
+pub struct Texture {
+    pub(crate) context : WeakContext,
     resource           : TextureResource,
     pub(crate) format  : TextureFormat,
     typ                : u32
 }
 
-impl<'context> Texture<'context> {
+impl Texture {
     /// Creates a new `Texture` with the specified `TextureFormat` and the internal OpenGL `typ`.
-    pub fn new(context:&'context Context, format:TextureFormat, typ:u32) -> Self {
+    pub fn new(context:&Context, format:TextureFormat, typ:u32) -> Self {
+        let gl = &context.data.borrow().gl;
         let resource = unsafe {
-            context.gl.create_texture().expect("Couldn't create texture")
+            gl.create_texture().expect("Couldn't create texture")
         };
+        let context = context.weak();
         Self {context,resource,format,typ}
     }
 
@@ -33,10 +35,12 @@ impl<'context> Texture<'context> {
     }
 
     pub(crate) fn bind(&self) {
-        let gl = &self.context.gl;
-        unsafe {
-            gl.bind_texture(self.typ(), Some(self.resource()));
-        }
+        self.context.upgrade().map(|context| {
+            let gl = &context.data.borrow().gl;
+            unsafe {
+                gl.bind_texture(self.typ(), Some(self.resource()));
+            }
+        });
     }
 
     /// Gets `TextureResource`.
@@ -45,10 +49,12 @@ impl<'context> Texture<'context> {
     }
 }
 
-impl Drop for Texture<'_> {
+impl Drop for Texture {
     fn drop(&mut self) {
-        unsafe {
-            self.context.gl.delete_texture(self.resource());
-        }
+        self.context.upgrade().map(|context| {
+            unsafe {
+                context.data.borrow().gl.delete_texture(self.resource());
+            }
+        });
     }
 }

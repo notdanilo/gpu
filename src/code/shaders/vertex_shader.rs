@@ -4,13 +4,13 @@ use crate::Context;
 
 /// A vertex shader representation.
 #[derive(Shrinkwrap)]
-pub struct VertexShader<'context> {
-    shader : Shader<'context>
+pub struct VertexShader {
+    shader : Shader
 }
 
-impl<'context> VertexShader<'context> {
+impl VertexShader {
     /// Creates a new `FragmentShader` from a source code.
-    pub fn new(context:&'context Context, source: &str) -> Result<Self, String> {
+    pub fn new(context:&Context, source: &str) -> Result<Self, String> {
         let shader = Shader::new(context, glow::VERTEX_SHADER, source)?;
         Ok(Self{shader})
     }

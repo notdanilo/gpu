@@ -1,6 +1,7 @@
 use crate::Framebuffer;
 
 use crate::Context;
+use crate::WeakContext;
 use glow::HasContext;
 
 
@@ -10,14 +11,14 @@ use glow::HasContext;
 // ====================
 
 /// A program that clears colors, depth and stencil of a `framebuffer`.
-pub struct ClearProgram<'context> {
-    context : &'context Context,
+pub struct ClearProgram {
+    context : WeakContext,
     color : (f32, f32, f32, f32),
     depth: f32,
     stencil: i32
 }
 
-impl<'context> ClearProgram<'context> {
+impl ClearProgram {
     /// Color buffer bit.
     pub const COLOR   : u32 = glow::COLOR_BUFFER_BIT;
     /// Depth buffer bit.
@@ -26,7 +27,8 @@ impl<'context> ClearProgram<'context> {
     pub const STENCIL : u32 = glow::STENCIL_BUFFER_BIT;
 
     /// Creates a new `ClearProgram`.
-    pub fn new(context:&'context Context) -> Self {
+    pub fn new(context:&Context) -> Self {
+        let context = context.weak();
         let color = (0.0, 0.0, 0.0, 0.0);
         let depth = 1.0; // is it default?
         let stencil = 0; // is it default?
@@ -53,14 +55,16 @@ impl<'context> ClearProgram<'context> {
     /// ```rust,ignore
     /// clear(framebuffer, ClearProgram::COLOR | ClearProgram::DEPTH | ClearProgram::STENCIL)
     /// ```
-    pub fn clear(&self, framebuffer:&'context mut Framebuffer<'_>, clear_mask: u32) {
-        let gl = &self.context.gl;
-        unsafe {
-            framebuffer.bind();
-            gl.clear_color(self.color.0, self.color.1, self.color.2, self.color.3);
-            gl.clear_depth_f32(self.depth);
-            gl.clear_stencil(self.stencil);
-            gl.clear(clear_mask);
-        }
+    pub fn clear(&self, framebuffer:&mut Framebuffer, clear_mask: u32) {
+        self.context.upgrade().map(|context| {
+            let gl = &context.data.borrow().gl;
+            unsafe {
+                framebuffer.bind();
+                gl.clear_color(self.color.0, self.color.1, self.color.2, self.color.3);
+                gl.clear_depth_f32(self.depth);
+                gl.clear_stencil(self.stencil);
+                gl.clear(clear_mask);
+            }
+        });
     }
 }
