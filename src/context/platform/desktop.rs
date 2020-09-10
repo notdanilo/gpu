@@ -1,5 +1,4 @@
-use crate::context::ContextBuilder;
-use crate::context::ContextDisplay;
+use crate::{ContextBuilder, ContextDisplay, GPUContext};
 
 pub use glutin::ContextError;
 use glutin::ContextTrait;
@@ -36,13 +35,9 @@ pub struct Context {
     pub data : Rc<RefCell<ContextData>>
 }
 
-impl Context {
-    pub fn weak(&self) -> WeakContext {
-        WeakContext { data: Rc::downgrade(&self.data) }
-    }
-
+impl GPUContext for Context {
     /// Creates a new `Context`.
-    pub fn new(builder:&ContextBuilder) -> Self {
+    fn new(builder:&ContextBuilder) -> Self {
         let events_loop = glutin::EventsLoop::new();
         let mut window_builder = glutin::WindowBuilder::new();
 
@@ -90,7 +85,7 @@ impl Context {
     }
 
     /// Runs the `Context` and returns `false` if the `Context` is no longer available.
-    pub fn run(&mut self) -> bool {
+    fn run(&mut self) -> bool {
         use std::ops::DerefMut;
         let mut data = self.data.borrow_mut();
         let data = data.deref_mut();
@@ -113,7 +108,7 @@ impl Context {
     }
 
     /// Makes the `Context` current for the current thread.
-    pub fn make_current(&self) -> Result<(), ContextError> {
+    fn make_current(&self) -> Result<(), ContextError> {
         unsafe {
             self.data.borrow().context.make_current()
 
@@ -121,20 +116,26 @@ impl Context {
     }
 
     /// Swap buffers for presenting in the `ContextDisplay`.
-    pub fn swap_buffers(&self) -> Result<(), ContextError> {
+    fn swap_buffers(&self) -> Result<(), ContextError> {
         self.data.borrow().context.swap_buffers()
     }
 
     /// OpenGL function dynamic loading.
-    pub fn get_proc_address(&self, addr: &str) -> *const () {
+    fn get_proc_address(&self, addr: &str) -> *const () {
         self.data.borrow().context.get_proc_address(addr)
     }
 
     /// Gets the inner dimensions of the `ContextDisplay`.
-    pub fn inner_dimensions(&self) -> (usize, usize) {
+    fn inner_dimensions(&self) -> (usize, usize) {
         let dpi      = self.data.borrow().context.get_hidpi_factor();
         let logical  = self.data.borrow().context.get_inner_size().expect("Couldn't get inner size");
         let physical = logical.to_physical(dpi);
         (physical.width as usize, physical.height as usize)
+    }
+}
+
+impl Context {
+    pub fn weak(&self) -> WeakContext {
+        WeakContext { data: Rc::downgrade(&self.data) }
     }
 }

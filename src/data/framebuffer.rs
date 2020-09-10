@@ -1,7 +1,8 @@
+use crate::prelude::*;
 use crate::data::Texture2D;
 use crate::data::Renderbuffer;
 use crate::{Context, WeakContext};
-use glow::HasContext;
+
 
 type FramebufferResource = <glow::Context as HasContext>::Framebuffer;
 

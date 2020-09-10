@@ -7,6 +7,9 @@ use wasm_bindgen::JsCast;
 use std::rc::{Rc, Weak};
 use std::cell::RefCell;
 
+/// Web Contexts doesn't emit any error.
+pub type ContextError = ();
+
 // ===============
 // === Context ===
 // ===============
@@ -76,11 +79,11 @@ impl Context {
         false
     }
 
-    pub fn make_current(&self) -> Result<(), String> {
+    pub fn make_current(&self) -> Result<(), ()> {
         Ok(())
     }
 
-    pub fn swap_buffers(&self) -> Result<(), String> {
+    pub fn swap_buffers(&self) -> Result<(), ()> {
         Ok(())
     }
 

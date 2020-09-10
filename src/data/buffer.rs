@@ -1,6 +1,5 @@
+use crate::prelude::*;
 use crate::{Context, WeakContext};
-
-use glow::HasContext;
 
 type BufferResource = <glow::Context as HasContext>::Buffer;
 

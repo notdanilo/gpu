@@ -10,7 +10,7 @@
 #![warn(unused_import_braces)]
 #![warn(unused_qualifications)]
 
-mod prelude;
+pub mod prelude;
 
 mod context;
 mod data;

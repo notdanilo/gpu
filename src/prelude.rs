@@ -1,2 +1,4 @@
-/// Shrinkwrap re-export.
-pub use shrinkwraprs::Shrinkwrap;
+pub use crate::GPUContext;
+
+pub(crate) use shrinkwraprs::Shrinkwrap;
+pub(crate) use glow::HasContext;

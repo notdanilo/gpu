@@ -26,7 +26,8 @@ impl Program {
     /// Gets the `ProgramResource` object.
     pub fn resource(&self) -> ProgramResource { self.resource }
 
-// FIXME: These parts were removed because glow uses a minimum set of GL x GLES x WEBGL
+// FIXME: These parts were removed because glow uses a minimum set of GL x GLES x WEBGL.
+// These functions can be included in a trait which can be implemented for backends that supports it.
 //    fn bind_buffer(&mut self, buffer: &Buffer, index: u32) {
 //        unsafe {
 //            self::BindBufferBase(gl::SHADER_STORAGE_BUFFER, index, buffer.get_id());

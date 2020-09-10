@@ -12,6 +12,8 @@ mod texture_3d {
     use gpu::TextureFormat;
     use gpu::ColorFormat;
     use gpu::Type;
+    use gpu::prelude::*;
+
 
     #[test]
     fn allocation() {
