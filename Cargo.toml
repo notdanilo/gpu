@@ -1,6 +1,6 @@
 [package]
 name          = "gpu"
-version       = "0.1.4"
+version       = "0.1.5"
 authors       = ["Danilo Guanabara <danguafer@gmail.com>"]
 edition       = "2018"
 license       = "Apache-2.0"
