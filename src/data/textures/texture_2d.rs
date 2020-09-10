@@ -61,7 +61,7 @@ impl Texture2D {
         self.format     = format.clone();
         self.bind();
         self.context.upgrade().map(|context| {
-            let gl = &context.data.borrow().gl;
+            let gl = context.internal_context();
             unsafe {
                 let tex_type        = self.typ();
                 let internal_format = format.internal_format();
@@ -76,7 +76,7 @@ impl Texture2D {
         self.format     = format.clone();
         self.bind();
         self.context.upgrade().map(|context| {
-            let gl = &context.data.borrow().gl;
+            let gl = context.internal_context();
             unsafe {
                 let (color, ty)     = data_format.get_format_type();
                 let internal_format = format.internal_format() as i32;
@@ -94,7 +94,7 @@ impl Texture2D {
         let capacity          = width * height * self.format().color_format().size();
         let mut data : Vec<T> = Vec::with_capacity(capacity);
         self.context.upgrade().map(|context| {
-            let gl = &context.data.borrow().gl;
+            let gl = context.internal_context();
             unsafe {
                 data.set_len(capacity);
 

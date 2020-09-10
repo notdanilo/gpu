@@ -1,4 +1,4 @@
-use crate::Framebuffer;
+use crate::{Framebuffer, ContextInternals};
 
 use crate::Context;
 use crate::WeakContext;
@@ -28,7 +28,7 @@ impl ClearProgram {
 
     /// Creates a new `ClearProgram`.
     pub fn new(context:&Context) -> Self {
-        let context = context.weak();
+        let context = context.weak_ref();
         let color = (0.0, 0.0, 0.0, 0.0);
         let depth = 1.0; // is it default?
         let stencil = 0; // is it default?
@@ -57,7 +57,7 @@ impl ClearProgram {
     /// ```
     pub fn clear(&self, framebuffer:&mut Framebuffer, clear_mask: u32) {
         self.context.upgrade().map(|context| {
-            let gl = &context.data.borrow().gl;
+            let gl = &context.internal_context();
             unsafe {
                 framebuffer.bind();
                 gl.clear_color(self.color.0, self.color.1, self.color.2, self.color.3);

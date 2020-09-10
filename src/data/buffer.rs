@@ -14,11 +14,11 @@ pub struct Buffer {
 
 impl Buffer {
     fn new(context:&Context) -> Self {
-        let gl = &context.data.borrow().gl;
+        let gl = context.internal_context();
         let resource = unsafe {
             gl.create_buffer().expect("Couldn't create Buffer")
         };
-        let context = context.weak();
+        let context = context.weak_ref();
         Self {context,resource}
     }
 
@@ -43,7 +43,7 @@ impl Buffer {
 
     pub(crate) fn bind(&self) {
         self.context.upgrade().map(|context| {
-            let gl = &context.data.borrow().gl;
+            let gl = context.internal_context();
             let resource = self.resource();
             let resource = if resource == Default::default() { None } else { Some(resource) };
             unsafe {
@@ -57,7 +57,7 @@ impl Buffer {
         self.bind();
         let mut size = 0;
         self.context.upgrade().map(|context| {
-            let gl = &context.data.borrow().gl;
+            let gl = context.internal_context();
             unsafe {
                 size = gl.get_buffer_parameter_i32(glow::ARRAY_BUFFER, glow::BUFFER_SIZE) as usize
             }
@@ -69,7 +69,7 @@ impl Buffer {
     pub fn set_data<T>(&mut self, data: &[T]) {
         self.bind();
         self.context.upgrade().map(|context| {
-            let gl = &context.data.borrow().gl;
+            let gl = context.internal_context();
             unsafe {
                 let slice = as_u8_slice(data.as_ref());
                 gl.buffer_data_u8_slice(glow::ARRAY_BUFFER, slice, glow::STATIC_DRAW);
@@ -84,7 +84,7 @@ impl Buffer {
         let mut data : Vec<T> = Vec::with_capacity(capacity);
         self.bind();
         self.context.upgrade().map(|context| {
-            let gl = &context.data.borrow().gl;
+            let gl = context.internal_context();
             unsafe {
                 data.set_len(capacity);
                 let offset = 0;
@@ -98,7 +98,7 @@ impl Buffer {
     /// Reallocates the memory with `size`.
     pub fn reallocate(&mut self, size: usize) {
         self.context.upgrade().map(|context| {
-            let gl = &context.data.borrow().gl;
+            let gl = context.internal_context();
             self.bind();
             unsafe {
                 gl.buffer_data_size(glow::ARRAY_BUFFER, size as i32, glow::STATIC_DRAW);
@@ -111,7 +111,7 @@ impl Drop for Buffer {
     fn drop(&mut self) {
         self.context.upgrade().map(|context| {
             unsafe {
-                context.data.borrow().gl.delete_buffer(self.resource());
+                context.internal_context().delete_buffer(self.resource());
             }
         });
     }

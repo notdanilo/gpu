@@ -2,6 +2,7 @@
 //use crate::data::Texture;
 //use crate::data::Sampler;
 
+use crate::prelude::*;
 use crate::{Context, WeakContext};
 use glow::HasContext;
 
@@ -17,9 +18,9 @@ impl Program {
     /// Creates a new `Program`.
     pub fn new(context: &Context) -> Self {
         let resource = unsafe {
-            context.data.borrow().gl.create_program().expect("Couldn't create program")
+            context.internal_context().create_program().expect("Couldn't create program")
         };
-        let context = context.weak();
+        let context = context.weak_ref();
         Self {context,resource}
     }
 
@@ -57,7 +58,7 @@ impl Drop for Program {
     fn drop(&mut self) {
         self.context.upgrade().map(|context| {
             unsafe {
-                context.data.borrow().gl.delete_program(self.resource());
+                context.internal_context().delete_program(self.resource());
             }
         });
     }

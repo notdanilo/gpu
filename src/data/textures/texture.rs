@@ -1,7 +1,6 @@
+use crate::prelude::*;
 use crate::{Context, WeakContext};
 use crate::TextureFormat;
-
-use glow::HasContext;
 
 type TextureResource = <glow::Context as HasContext>::Texture;
 
@@ -16,11 +15,11 @@ pub struct Texture {
 impl Texture {
     /// Creates a new `Texture` with the specified `TextureFormat` and the internal OpenGL `typ`.
     pub fn new(context:&Context, format:TextureFormat, typ:u32) -> Self {
-        let gl = &context.data.borrow().gl;
+        let gl = context.internal_context();
         let resource = unsafe {
             gl.create_texture().expect("Couldn't create texture")
         };
-        let context = context.weak();
+        let context = context.weak_ref();
         Self {context,resource,format,typ}
     }
 
@@ -36,7 +35,7 @@ impl Texture {
 
     pub(crate) fn bind(&self) {
         self.context.upgrade().map(|context| {
-            let gl = &context.data.borrow().gl;
+            let gl = context.internal_context();
             unsafe {
                 gl.bind_texture(self.typ(), Some(self.resource()));
             }
@@ -53,7 +52,7 @@ impl Drop for Texture {
     fn drop(&mut self) {
         self.context.upgrade().map(|context| {
             unsafe {
-                context.data.borrow().gl.delete_texture(self.resource());
+                context.internal_context().delete_texture(self.resource());
             }
         });
     }

@@ -30,7 +30,7 @@ impl RasterProgram {
     /// Creates a new `RasterProgram` with a `FragmentShader` and ` VertexShader`.
     pub fn new(context:&Context, fragment_shader:&FragmentShader, vertex_shader:&VertexShader) -> Result<Self, String> {
         let program = Program::new(context);
-        let gl      = &context.data.borrow().gl;
+        let gl      = context.internal_context();
         unsafe {
             gl.attach_shader(program.resource(), vertex_shader.resource());
             gl.attach_shader(program.resource(), fragment_shader.resource());
@@ -48,7 +48,7 @@ impl RasterProgram {
     pub(crate) fn use_(&self) {
         self.context.upgrade().map(|context| {
             unsafe {
-                context.data.borrow().gl.use_program(Some(self.resource()));
+                context.internal_context().use_program(Some(self.resource()));
             }
         });
     }
@@ -56,7 +56,7 @@ impl RasterProgram {
     /// Draws the `n_vertices` in a `VertexArrayObject` as the specified `RasterGeometry` on the target `Framebuffer`.
     pub fn raster(&self, framebuffer: &Framebuffer, vertex_array_object: &VertexArrayObject, raster_geometry: RasterGeometry, n_vertices: u32) {
         self.context.upgrade().map(|context| {
-            let gl = &context.data.borrow().gl;
+            let gl = context.internal_context();
             unsafe {
                 framebuffer.bind();
                 self.use_();

@@ -54,7 +54,7 @@ impl Texture3D {
     pub fn reallocate(&mut self, dimensions: (usize, usize, usize), format: &TextureFormat) {
         self.dimensions = dimensions;
         self.context.upgrade().map(|context| {
-            let gl = &context.data.borrow().gl;
+            let gl = context.internal_context();
             self.format = format.clone();
             self.bind();
             unsafe {
@@ -73,7 +73,7 @@ impl Texture3D {
         self.format = format.clone();
         self.bind();
         self.context.upgrade().map(|context| {
-            let gl = &context.data.borrow().gl;
+            let gl = context.internal_context();
             unsafe {
                 let (color, ty)     = data_format.get_format_type();
                 let internal_format = format.internal_format() as i32;
@@ -93,7 +93,7 @@ impl Texture3D {
         let capacity             = width * height * depth * color_size;
         let mut data : Vec<T>    = Vec::with_capacity(capacity);
         self.context.upgrade().map(|context| {
-            let gl = &context.data.borrow().gl;
+            let gl = context.internal_context();
             unsafe {
                 data.set_len(capacity);
 

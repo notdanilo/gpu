@@ -1,43 +1,73 @@
-use crate::{ContextBuilder, ContextDisplay, GPUContext};
+use crate::{ContextBuilder, ContextDisplay, GPUContext, ContextInternals};
 
 pub use glutin::ContextError;
 use glutin::ContextTrait;
-use std::rc::{Rc, Weak};
-use std::cell::RefCell;
-
+use std::rc::Rc;
 
 
 // ===============
 // === Context ===
 // ===============
 
-pub struct ContextData {
-    events_loop   : glutin::EventsLoop,
-    context       : glutin::WindowedContext,
-    // TODO: We want more backend support like Vulkan.
-    pub(crate) gl : glow::Context
+/// GPU `Context` representation.
+pub struct Context {
+    events_loop : glutin::EventsLoop,
+    context     : glutin::WindowedContext,
+    gl          : Rc<glow::Context>
 }
 
-pub struct WeakContext {
-    pub(crate) data : Weak<RefCell<ContextData>>
-}
-
-impl WeakContext {
-    pub fn upgrade(&self) -> Option<Context> {
-        self.data.upgrade().map(|data| {
-            Context { data }
-        })
+impl ContextInternals for Context {
+    fn internal_context(&self) -> Rc<glow::Context> {
+        self.gl.clone()
     }
 }
 
-/// GPU `Context` representation.
-pub struct Context {
-    pub data : Rc<RefCell<ContextData>>
+impl GPUContext for Context {
+    fn run(&mut self) -> bool {
+        let events_loop = &mut self.events_loop;
+        let context = &mut self.context;
+        let mut available = true;
+        events_loop.poll_events(|event| {
+            if let glutin::Event::WindowEvent{ event, .. } = event {
+                match event {
+                    glutin::WindowEvent::CloseRequested => available = false,
+                    glutin::WindowEvent::Resized(logical_size) => {
+                        let dpi_factor = context.get_hidpi_factor();
+                        context.resize(logical_size.to_physical(dpi_factor));
+                    },
+                    _ => ()
+                }
+            }
+        });
+        available
+    }
+
+    fn make_current(&self) -> Result<(), ContextError> {
+        unsafe {
+            self.context.make_current()
+
+        }
+    }
+
+    fn swap_buffers(&self) -> Result<(), ContextError> {
+        self.context.swap_buffers()
+    }
+
+    fn get_proc_address(&self, addr: &str) -> *const () {
+        self.context.get_proc_address(addr)
+    }
+
+    fn inner_dimensions(&self) -> (usize, usize) {
+        let dpi      = self.context.get_hidpi_factor();
+        let logical  = self.context.get_inner_size().expect("Couldn't get inner size");
+        let physical = logical.to_physical(dpi);
+        (physical.width as usize, physical.height as usize)
+    }
 }
 
-impl GPUContext for Context {
+impl Context {
     /// Creates a new `Context`.
-    fn new(builder:&ContextBuilder) -> Self {
+    pub fn new(builder:&ContextBuilder) -> Self {
         let events_loop = glutin::EventsLoop::new();
         let mut window_builder = glutin::WindowBuilder::new();
 
@@ -80,62 +110,7 @@ impl GPUContext for Context {
             context.get_proc_address(s) as *const _
         });
 
-        let data = Rc::new(RefCell::new(ContextData{events_loop,context,gl}));
-        Self { data }
-    }
-
-    /// Runs the `Context` and returns `false` if the `Context` is no longer available.
-    fn run(&mut self) -> bool {
-        use std::ops::DerefMut;
-        let mut data = self.data.borrow_mut();
-        let data = data.deref_mut();
-        let events_loop = &mut data.events_loop;
-        let context = &mut data.context;
-        let mut available = true;
-        events_loop.poll_events(|event| {
-            if let glutin::Event::WindowEvent{ event, .. } = event {
-                match event {
-                    glutin::WindowEvent::CloseRequested => available = false,
-                    glutin::WindowEvent::Resized(logical_size) => {
-                        let dpi_factor = context.get_hidpi_factor();
-                        context.resize(logical_size.to_physical(dpi_factor));
-                    },
-                    _ => ()
-                }
-            }
-        });
-        available
-    }
-
-    /// Makes the `Context` current for the current thread.
-    fn make_current(&self) -> Result<(), ContextError> {
-        unsafe {
-            self.data.borrow().context.make_current()
-
-        }
-    }
-
-    /// Swap buffers for presenting in the `ContextDisplay`.
-    fn swap_buffers(&self) -> Result<(), ContextError> {
-        self.data.borrow().context.swap_buffers()
-    }
-
-    /// OpenGL function dynamic loading.
-    fn get_proc_address(&self, addr: &str) -> *const () {
-        self.data.borrow().context.get_proc_address(addr)
-    }
-
-    /// Gets the inner dimensions of the `ContextDisplay`.
-    fn inner_dimensions(&self) -> (usize, usize) {
-        let dpi      = self.data.borrow().context.get_hidpi_factor();
-        let logical  = self.data.borrow().context.get_inner_size().expect("Couldn't get inner size");
-        let physical = logical.to_physical(dpi);
-        (physical.width as usize, physical.height as usize)
-    }
-}
-
-impl Context {
-    pub fn weak(&self) -> WeakContext {
-        WeakContext { data: Rc::downgrade(&self.data) }
+        let gl = Rc::new(gl);
+        Self { events_loop, context, gl }
     }
 }

@@ -1,7 +1,6 @@
+use crate::prelude::*;
 use crate::data::Buffer;
-
 use crate::{Context, WeakContext};
-use glow::HasContext;
 
 type VertexArrayObjectResource = <glow::Context as HasContext>::VertexArray;
 
@@ -15,12 +14,12 @@ pub struct VertexArrayObject {
 impl VertexArrayObject {
     /// Creates a new `VertexArrayObject`.
     pub fn new(context:&Context) -> Self {
-        let gl = &context.data.borrow().gl;
+        let gl = context.internal_context();
         let resource = unsafe {
             gl.create_vertex_array().expect("Couldn't create VertexArrayObject")
         };
         let vertices = 0;
-        let context = context.weak();
+        let context = context.weak_ref();
         Self {context,resource,vertices}
     }
 
@@ -31,7 +30,7 @@ impl VertexArrayObject {
     pub(crate) fn bind(&self) {
         self.context.upgrade().map(|context| {
             unsafe {
-                context.data.borrow().gl.bind_vertex_array(Some(self.resource()));
+                context.internal_context().bind_vertex_array(Some(self.resource()));
             }
         });
     }
@@ -39,7 +38,7 @@ impl VertexArrayObject {
     /// Sets a `Buffer` as a vertices sources, where each vertex has `n_elements`
     pub fn set_vertex_buffer(&mut self, buffer : &Buffer, attribute_index: u32, n_elements: u32) {
         self.context.upgrade().map(|context| {
-            let gl = &context.data.borrow().gl;
+            let gl = context.internal_context();
             self.bind();
             buffer.bind();
             unsafe {
@@ -73,7 +72,7 @@ impl Drop for VertexArrayObject {
     fn drop(&mut self) {
         self.context.upgrade().map(|context| {
             unsafe {
-                context.data.borrow().gl.delete_vertex_array(self.resource());
+                context.internal_context().delete_vertex_array(self.resource());
             }
         });
     }
