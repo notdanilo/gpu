@@ -82,6 +82,7 @@ impl ContextBuilder {
         Context::new(&self)
     }
 
+    #[cfg(target_arch = "wasm32")]
     /// Creates a new `Context` from a `web_sys::HtmlCanvasElement` with all the parameters
     /// specified in the `ContextBuilder`.
     pub fn build_from_canvas(self, canvas: web_sys::HtmlCanvasElement) -> Context {
