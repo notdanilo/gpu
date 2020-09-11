@@ -55,9 +55,6 @@ jobs:
           args: wasm-pack
       - name: Run tests
         run: wasm-pack test --chrome --headless
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
 
   test:
     name: Tests
