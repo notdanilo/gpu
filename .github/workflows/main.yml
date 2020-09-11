@@ -92,7 +92,7 @@ jobs:
 
   coverage:
     name: Coverage
-    runs-on: macOS-latest
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v1
       - name: Install Rust Toolchain
