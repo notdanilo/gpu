@@ -17,7 +17,6 @@ mod texture_3d {
 
     #[test]
     fn allocation() {
-        panic!("UA: {}", web_sys::window().unwrap().navigator().user_agent().unwrap());
         let context_builder = ContextBuilder::new().with_display(ContextDisplay::None);
         let context = context_builder.build();
 
