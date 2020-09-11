@@ -60,7 +60,7 @@ impl Buffer {
     pub fn set_data<T>(&mut self, data: &[T]) {
         self.bind();
         unsafe {
-            let slice = as_u8_slice(data.as_ref());
+            let slice = as_u8_slice(data);
             self.gl.buffer_data_u8_slice(glow::ARRAY_BUFFER, slice, glow::STATIC_DRAW);
         }
     }

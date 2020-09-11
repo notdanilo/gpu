@@ -1,0 +1,125 @@
+name: Build (MacOS, Linux, Windows)
+
+on: [push]
+
+jobs:
+  build-web:
+    name: Build (wasm)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Install Rust Toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      - name: Install wasm-pack
+        uses: actions-rs/cargo@v1
+        with:
+          command: install
+          args: wasm-pack
+      - name: Run wasm-pack build
+        run: wasm-pack build
+
+  build:
+    name: Build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix: 
+        os: [windows-latest, macOS-latest, ubuntu-latest]
+    steps:
+      - uses: actions/checkout@v1
+      - name: Install Rust Toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      - name: Run cargo check
+        uses: actions-rs/cargo@v1
+        with:
+          command: check
+
+# glow's gl_ReadPixels cannot read GL_FLOAT pixels. So this is broken and shouldn't be pushed.
+#  test-web:
+#    name: Tests (wasm)
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/checkout@v1
+#      - uses: actions-rs/toolchain@v1
+#        with:
+#          toolchain: stable
+#          override: true
+#      - name: Install wasm-pack
+#        uses: actions-rs/cargo@v1
+#        with:
+#          command: install
+#          args: wasm-pack
+#      - name: Run tests
+#        run: wasm-pack test --chrome --headless
+
+# windows-latest, macOS-latest: Unsupported PixelFormat?
+# ubuntu-latest: No OpenGL software renderer?
+#  test:
+#    name: Tests
+#    runs-on: ${{ matrix.os }}
+#    strategy:
+#      matrix:
+#        os: [windows-latest, macOS-latest, ubuntu-latest]
+#    steps:
+#      - uses: actions/checkout@v1
+#      - uses: actions-rs/toolchain@v1
+#        with:
+#          toolchain: stable
+#          override: true
+#      - name: Run tests
+#        uses: actions-rs/cargo@v1
+#        with:
+#          command: test
+#          args: -- --test-threads=1
+
+  clippy:
+    name: Linter
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      - run: rustup component add clippy
+      - uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: -- -D warnings
+
+# We can't run coverage without working tests.
+#  coverage:
+#    name: Coverage
+#    runs-on: windows-latest
+#    steps:
+#      - uses: actions/checkout@v1
+#      - name: Install Rust Toolchain
+#        uses: actions-rs/toolchain@v1
+#        with:
+#          toolchain: stable
+#          override: true
+#      - name: Generate test profile
+#        uses: actions-rs/cargo@v1
+#        with:
+#          command: test
+#          args: --all-features --no-fail-fast
+#        env:
+#          'CARGO_INCREMENTAL': '0'
+#          'RUSTFLAGS': '-Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off'
+#      - name: Generate coverage report
+#        id: coverage
+#        uses: actions-rs/grcov@v0.1
+#      - name: list all /tmp files
+#        run: ls -la /tmp
+#      - name: show the coverage report
+#        run: cat ${{ steps.coverage.outputs.report }}
+#      - name: Upload coverage report
+#        uses: codecov/codecov-action@v1.0.2
+#        with:
+#          token: ${{ secrets.CODECOV_TOKEN }}
+#          file: ./lcov.info
