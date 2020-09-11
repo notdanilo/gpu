@@ -92,33 +92,34 @@ jobs:
           command: clippy
           args: -- -D warnings
 
-  coverage:
-    name: Coverage
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v1
-      - name: Install Rust Toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
-      - name: Generate test profile
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --all-features
-        env:
-          'CARGO_INCREMENTAL': '0'
-          'RUSTFLAGS': '-Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off'
-      - name: Generate coverage report
-        id: coverage
-        uses: actions-rs/grcov@v0.1
-      - name: list all /tmp files
-        run: ls -la /tmp
-      - name: show the coverage report
-        run: cat ${{ steps.coverage.outputs.report }}
-      - name: Upload coverage report
-        uses: codecov/codecov-action@v1.0.2
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          file: ./lcov.info
+# We can't run coverage without working tests.
+#  coverage:
+#    name: Coverage
+#    runs-on: windows-latest
+#    steps:
+#      - uses: actions/checkout@v1
+#      - name: Install Rust Toolchain
+#        uses: actions-rs/toolchain@v1
+#        with:
+#          toolchain: stable
+#          override: true
+#      - name: Generate test profile
+#        uses: actions-rs/cargo@v1
+#        with:
+#          command: test
+#          args: --all-features --no-fail-fast
+#        env:
+#          'CARGO_INCREMENTAL': '0'
+#          'RUSTFLAGS': '-Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off'
+#      - name: Generate coverage report
+#        id: coverage
+#        uses: actions-rs/grcov@v0.1
+#      - name: list all /tmp files
+#        run: ls -la /tmp
+#      - name: show the coverage report
+#        run: cat ${{ steps.coverage.outputs.report }}
+#      - name: Upload coverage report
+#        uses: codecov/codecov-action@v1.0.2
+#        with:
+#          token: ${{ secrets.CODECOV_TOKEN }}
+#          file: ./lcov.info
