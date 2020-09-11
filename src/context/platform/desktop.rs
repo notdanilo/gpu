@@ -1,4 +1,4 @@
-use crate::{ContextBuilder, ContextDisplay, GPUContext, HasGLContext, GLContext};
+use crate::{ContextBuilder, ContextDisplay, HasContext, HasGLContext, GLContext};
 
 pub use glutin::ContextError;
 use glutin::ContextTrait;
@@ -21,7 +21,7 @@ impl HasGLContext for Context {
     }
 }
 
-impl GPUContext for Context {
+impl HasContext for Context {
     fn run(&mut self) -> bool {
         let events_loop = &mut self.events_loop;
         let context = &mut self.context;

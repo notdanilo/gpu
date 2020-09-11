@@ -4,7 +4,7 @@ use crate::context::ContextBuilder;
 
 use web_sys::HtmlCanvasElement;
 use wasm_bindgen::JsCast;
-use crate::{GLContext, GPUContext, HasGLContext};
+use crate::{GLContext, HasContext, HasGLContext};
 
 /// Web Contexts doesn't emit any error.
 pub type ContextError = ();
@@ -59,7 +59,7 @@ impl HasGLContext for Context {
     }
 }
 
-impl GPUContext for Context {
+impl HasContext for Context {
     fn run(&mut self) -> bool {
         false
     }

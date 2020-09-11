@@ -10,7 +10,7 @@ pub mod backend;
 pub(crate) use backend::gl_context::{GLContext, HasGLContext};
 
 /// A trait defining the `GPUContext` interface.
-pub trait GPUContext: HasGLContext {
+pub trait HasContext: HasGLContext {
     /// Runs the `Context` and returns `false` if the `Context` is no longer available.
     fn run(&mut self) -> bool;
 
@@ -28,7 +28,7 @@ pub trait GPUContext: HasGLContext {
 }
 
 /// The `Context` object.
-pub type Context = Box<dyn GPUContext>;
+pub type Context = Box<dyn HasContext>;
 
 #[cfg(not(all(target_arch = "wasm32")))]
 mod platform {

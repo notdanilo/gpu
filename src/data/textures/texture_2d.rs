@@ -103,6 +103,8 @@ impl Texture2D {
             let (format, ty) = self.format().get_format_type();
             let pixels       = glow::PixelPackData::Slice(as_u8_mut_slice(data.as_mut()));
             let (width, height) = self.dimensions();
+            //FIXME: glow read_pixels uses &mut [u8], which can't read GL_FLOAT. To be able to read
+            // GL_FLOAT, it needs to use a ArrayBufferView from a Float32Array.
             gl.read_pixels(0, 0, width as i32, height as i32, format, ty, pixels);
 
 
