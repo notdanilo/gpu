@@ -1,8 +1,9 @@
-# gpu
-An ergonomic GPU API
+<a href="https://crates.io/crates/gpu"><img src="https://img.shields.io/crates/v/gpu.svg?label=gpu" alt="crates.io"></a>
+<a href="https://docs.rs/gpu"><img src="https://docs.rs/gpu/badge.svg" alt="docs.rs"></a>
+![Build (MacOS, Linux, Windows)](https://github.com/notdanilo/gpu/workflows/Build%20(MacOS,%20Linux,%20Windows)/badge.svg?branch=master)
 
-## Usage
+# GPU
+An ergonomic GPU API.
 
-A better documentation will be provided in the near future. For now, run
- `cargo test -- --test-threads=1` to check the currently tested functionalities
-  and explore their unit tests implementation to see how to use them.
+## Examples
+Better examples will be provided in the future. For now, please check the [tests](https://github.com/notdanilo/gpu/tree/master/tests).

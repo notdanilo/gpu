@@ -22,51 +22,7 @@ impl HasGLContext for Context {
 }
 
 impl HasContext for Context {
-    fn run(&mut self) -> bool {
-        let events_loop = &mut self.events_loop;
-        let context = &mut self.context;
-        let mut available = true;
-        events_loop.poll_events(|event| {
-            if let glutin::Event::WindowEvent{ event, .. } = event {
-                match event {
-                    glutin::WindowEvent::CloseRequested => available = false,
-                    glutin::WindowEvent::Resized(logical_size) => {
-                        let dpi_factor = context.get_hidpi_factor();
-                        context.resize(logical_size.to_physical(dpi_factor));
-                    },
-                    _ => ()
-                }
-            }
-        });
-        available
-    }
-
-    fn make_current(&self) -> Result<(), ContextError> {
-        unsafe {
-            self.context.make_current()
-
-        }
-    }
-
-    fn swap_buffers(&self) -> Result<(), ContextError> {
-        self.context.swap_buffers()
-    }
-
-    fn get_proc_address(&self, addr: &str) -> *const () {
-        self.context.get_proc_address(addr)
-    }
-
-    fn inner_dimensions(&self) -> (usize, usize) {
-        let dpi      = self.context.get_hidpi_factor();
-        let logical  = self.context.get_inner_size().expect("Couldn't get inner size");
-        let physical = logical.to_physical(dpi);
-        (physical.width as usize, physical.height as usize)
-    }
-}
-
-impl Context {
-    /// Creates a new `Context`.
-    pub fn new(builder:&ContextBuilder) -> Self {
+    fn new(builder:&ContextBuilder) -> Self {
         let events_loop = glutin::EventsLoop::new();
         let mut window_builder = glutin::WindowBuilder::new();
 
@@ -113,5 +69,46 @@ impl Context {
 
         let gl = GLContext::from_glow_context(gl);
         Self { events_loop, context, gl }
+    }
+
+    fn run(&mut self) -> bool {
+        let events_loop = &mut self.events_loop;
+        let context = &mut self.context;
+        let mut available = true;
+        events_loop.poll_events(|event| {
+            if let glutin::Event::WindowEvent{ event, .. } = event {
+                match event {
+                    glutin::WindowEvent::CloseRequested => available = false,
+                    glutin::WindowEvent::Resized(logical_size) => {
+                        let dpi_factor = context.get_hidpi_factor();
+                        context.resize(logical_size.to_physical(dpi_factor));
+                    },
+                    _ => ()
+                }
+            }
+        });
+        available
+    }
+
+    fn make_current(&self) -> Result<(), ContextError> {
+        unsafe {
+            self.context.make_current()
+
+        }
+    }
+
+    fn swap_buffers(&self) -> Result<(), ContextError> {
+        self.context.swap_buffers()
+    }
+
+    fn get_proc_address(&self, addr: &str) -> *const () {
+        self.context.get_proc_address(addr)
+    }
+
+    fn inner_dimensions(&self) -> (usize, usize) {
+        let dpi      = self.context.get_hidpi_factor();
+        let logical  = self.context.get_inner_size().expect("Couldn't get inner size");
+        let physical = logical.to_physical(dpi);
+        (physical.width as usize, physical.height as usize)
     }
 }

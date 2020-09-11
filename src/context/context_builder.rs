@@ -1,4 +1,4 @@
-use super::{Context, ContextDisplay, BackendContext};
+use super::{Context, ContextDisplay, BackendContext, HasContext};
 
 /// A builder for `Context`.
 pub struct ContextBuilder {

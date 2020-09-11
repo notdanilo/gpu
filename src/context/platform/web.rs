@@ -23,23 +23,6 @@ pub struct Context {
 }
 
 impl Context {
-    pub fn new(_builder:&ContextBuilder) -> Self {
-        let document = web_sys::window()
-            .expect("Couldn't get window")
-            .document()
-            .expect("Couldn't get document");
-        let canvas = document
-            .create_element("canvas")
-            .expect("Couldn't create canvas")
-            .dyn_into::<HtmlCanvasElement>()
-            .expect("Couldn't convert HtmlCanvasElement");
-        let body = document
-            .body()
-            .expect("Couldn't get body");
-        body.append_with_node_1(&canvas).expect("Couldn't append canvas");
-        Self::from_canvas(canvas)
-    }
-
     pub fn from_canvas(canvas: HtmlCanvasElement) -> Self {
         let webgl2_context = canvas
             .get_context("webgl2")
@@ -60,6 +43,23 @@ impl HasGLContext for Context {
 }
 
 impl HasContext for Context {
+    fn new(_builder:&ContextBuilder) -> Self {
+        let document = web_sys::window()
+            .expect("Couldn't get window")
+            .document()
+            .expect("Couldn't get document");
+        let canvas = document
+            .create_element("canvas")
+            .expect("Couldn't create canvas")
+            .dyn_into::<HtmlCanvasElement>()
+            .expect("Couldn't convert HtmlCanvasElement");
+        let body = document
+            .body()
+            .expect("Couldn't get body");
+        body.append_with_node_1(&canvas).expect("Couldn't append canvas");
+        Self::from_canvas(canvas)
+    }
+
     fn run(&mut self) -> bool {
         false
     }

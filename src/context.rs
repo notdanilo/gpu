@@ -11,6 +11,9 @@ pub(crate) use backend::gl_context::{GLContext, HasGLContext};
 
 /// A trait defining the `GPUContext` interface.
 pub trait HasContext: HasGLContext {
+    /// Creates a new `Context`.
+    fn new(builder: &ContextBuilder) -> Self where Self: Sized;
+
     /// Runs the `Context` and returns `false` if the `Context` is no longer available.
     fn run(&mut self) -> bool;
 
