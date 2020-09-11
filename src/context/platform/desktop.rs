@@ -105,9 +105,11 @@ impl Context {
             context.make_current().expect("Context make current failed.");
         }
 
-        let gl = glow::Context::from_loader_function(|s| {
-            context.get_proc_address(s) as *const _
-        });
+        let gl = unsafe {
+            glow::Context::from_loader_function(|s| {
+                context.get_proc_address(s) as *const _
+            })
+        };
 
         let gl = GLContext::from_glow_context(gl);
         Self { events_loop, context, gl }

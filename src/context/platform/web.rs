@@ -4,8 +4,7 @@ use crate::context::ContextBuilder;
 
 use web_sys::HtmlCanvasElement;
 use wasm_bindgen::JsCast;
-use std::rc::{Rc, Weak};
-use std::cell::RefCell;
+use crate::{GLContext, GPUContext, HasGLContext};
 
 /// Web Contexts doesn't emit any error.
 pub type ContextError = ();
@@ -14,38 +13,16 @@ pub type ContextError = ();
 // === Context ===
 // ===============
 
-//TODO: pub gl : glow::Context is redefined both in platform/web.rs and platform/desktop.rs. They
-// should have a base object for it.
 //TODO: Context should be generalized for both desktop and web. What if we create a callback
 // based render loop and remove the method `run`? How to make it far more generalized and
 // consider a loop for when the Context doesn't need to swap buffers and is only used for computing?
 
-pub struct ContextData {
-    pub(crate) gl : glow::Context,
-    canvas        : HtmlCanvasElement
-}
-
-pub struct WeakContext {
-    pub(crate) data : Weak<RefCell<ContextData>>
-}
-
-impl WeakContext {
-    pub fn upgrade(&self) -> Option<Context> {
-        self.data.upgrade().map(|data| {
-            Context { data }
-        })
-    }
-}
-
 pub struct Context {
-    pub data : Rc<RefCell<ContextData>>
+    gl     : GLContext,
+    canvas : HtmlCanvasElement
 }
 
 impl Context {
-    pub fn weak(&self) -> WeakContext {
-        WeakContext { data: Rc::downgrade(&self.data) }
-    }
-
     pub fn new(_builder:&ContextBuilder) -> Self {
         let document = web_sys::window()
             .expect("Couldn't get window")
@@ -71,27 +48,35 @@ impl Context {
             .dyn_into::<web_sys::WebGl2RenderingContext>()
             .expect("Couldn't convert WebGl2RenderingContext");
         let gl = glow::Context::from_webgl2_context(webgl2_context);
-        let data = Rc::new(RefCell::new(ContextData {gl,canvas}));
-        Self { data }
+        let gl = GLContext::from_glow_context(gl);
+        Self { gl, canvas }
     }
+}
 
-    pub fn run(&mut self) -> bool {
+impl HasGLContext for Context {
+    fn gl_context(&self) -> GLContext {
+        self.gl.clone()
+    }
+}
+
+impl GPUContext for Context {
+    fn run(&mut self) -> bool {
         false
     }
 
-    pub fn make_current(&self) -> Result<(), ()> {
+    fn make_current(&self) -> Result<(), ()> {
         Ok(())
     }
 
-    pub fn swap_buffers(&self) -> Result<(), ()> {
+    fn swap_buffers(&self) -> Result<(), ()> {
         Ok(())
     }
 
-    pub fn get_proc_address(&self, _addr: &str) -> *const () {
+    fn get_proc_address(&self, _addr: &str) -> *const () {
         std::ptr::null()
     }
 
-    pub fn inner_dimensions(&self) -> (usize, usize) {
-        (self.data.borrow().canvas.width() as usize, self.data.borrow().canvas.height() as usize)
+    fn inner_dimensions(&self) -> (usize, usize) {
+        (self.canvas.width() as usize, self.canvas.height() as usize)
     }
 }

@@ -105,6 +105,7 @@ impl Texture2D {
             let (width, height) = self.dimensions();
             gl.read_pixels(0, 0, width as i32, height as i32, format, ty, pixels);
 
+
             gl.bind_framebuffer(glow::FRAMEBUFFER, None);
             gl.delete_framebuffer(fb);
         }
