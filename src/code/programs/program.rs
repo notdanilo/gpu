@@ -3,25 +3,24 @@
 //use crate::data::Sampler;
 
 use crate::prelude::*;
-use crate::{Context, WeakContext};
-use glow::HasContext;
+use crate::{Context, GLContext};
 
 type ProgramResource = <glow::Context as HasContext>::Program;
 
 /// A structure representing a GPU program.
 pub struct Program {
-    pub(crate) context : WeakContext,
+    pub(crate) gl      : GLContext,
     resource           : ProgramResource
 }
 
 impl Program {
     /// Creates a new `Program`.
     pub fn new(context: &Context) -> Self {
+        let gl = context.gl_context();
         let resource = unsafe {
-            context.internal_context().create_program().expect("Couldn't create program")
+            gl.create_program().expect("Couldn't create program")
         };
-        let context = context.weak_ref();
-        Self {context,resource}
+        Self { gl, resource}
     }
 
     /// Gets the `ProgramResource` object.
@@ -56,10 +55,8 @@ impl Program {
 
 impl Drop for Program {
     fn drop(&mut self) {
-        self.context.upgrade().map(|context| {
-            unsafe {
-                context.internal_context().delete_program(self.resource());
-            }
-        });
+        unsafe {
+            self.gl.delete_program(self.resource());
+        }
     }
 }

@@ -1,7 +1,7 @@
 use crate::prelude::*;
 use crate::data::Texture2D;
 use crate::data::Renderbuffer;
-use crate::{Context, WeakContext};
+use crate::{Context, GLContext};
 
 
 type FramebufferResource = <glow::Context as HasContext>::Framebuffer;
@@ -14,7 +14,7 @@ enum FramebufferAttachment {
 
 /// A Framebuffer representation with optional `color`, `depth` and `stencil` attachments.
 pub struct Framebuffer {
-    context    : WeakContext,
+    gl         : GLContext,
     resource   : FramebufferResource,
     dimensions : (usize, usize),
     color      : FramebufferAttachment,
@@ -37,8 +37,8 @@ impl Framebuffer {
         let color      = FramebufferAttachment::Renderbuffer(Renderbuffer::default(context));
         let _depth     = FramebufferAttachment::Renderbuffer(Renderbuffer::default(context));
         let _stencil   = FramebufferAttachment::Renderbuffer(Renderbuffer::default(context));
-        let context = context.weak_ref();
-        Self {context,resource,dimensions,color,_depth,_stencil}
+        let gl         = context.gl_context();
+        Self { gl, resource, dimensions, color, _depth, _stencil }
     }
 
     pub(crate) fn resource(&self) -> FramebufferResource {
@@ -46,14 +46,12 @@ impl Framebuffer {
     }
 
     pub(crate) fn bind(&self) {
-        self.context.upgrade().map(|context| {
-            let gl       = context.internal_context();
-            let resource = self.resource();
-            let resource = if resource == Default::default() { None } else { Some(resource) };
-            unsafe {
-                gl.bind_framebuffer(glow::FRAMEBUFFER, resource);
-            }
-        });
+        let gl       = &self.gl;
+        let resource = self.resource();
+        let resource = if resource == Default::default() { None } else { Some(resource) };
+        unsafe {
+            gl.bind_framebuffer(glow::FRAMEBUFFER, resource);
+        }
     }
 
     /// Creates a new `Framebuffer` with optional `color`, `depth` and `stencil`.
@@ -61,7 +59,7 @@ impl Framebuffer {
     (context:&Context, color: Option<Texture2D>,
      depth:Option<Texture2D>, stencil:Option<Texture2D>) -> Result<Self,
         String> {
-        let gl       = context.internal_context();
+        let gl       = context.gl_context();
         let resource = unsafe {
             let resource = gl.create_framebuffer().expect("Couldn't create Framebuffer");
             gl.bind_framebuffer(glow::FRAMEBUFFER, Some(resource));
@@ -89,8 +87,7 @@ impl Framebuffer {
             None => FramebufferAttachment::None
         };
 
-        let context = context.weak_ref();
-        Ok(Self {context,resource,dimensions,color,_depth,_stencil})
+        Ok(Self {gl, resource, dimensions, color, _depth, _stencil})
     }
 
     /// Gets the `Framebuffer`'s dimension.
@@ -107,10 +104,8 @@ impl Framebuffer {
 
 impl Drop for Framebuffer {
     fn drop(&mut self) {
-        self.context.upgrade().map(|context| {
-            unsafe {
-                context.internal_context().delete_framebuffer(self.resource());
-            }
-        });
+        unsafe {
+            self.gl.delete_framebuffer(self.resource());
+        }
     }
 }

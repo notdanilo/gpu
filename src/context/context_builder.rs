@@ -1,7 +1,4 @@
-use crate::prelude::*;
-use super::ContextDisplay;
-use super::Context;
-use crate::BackendContext;
+use super::{Context, ContextDisplay, BackendContext};
 
 /// A builder for `Context`.
 pub struct ContextBuilder {
@@ -47,7 +44,7 @@ impl ContextBuilder {
 
     /// Creates a new `Context` with all the parameters specified in the `ContextBuilder`.
     pub fn build(self) -> Context {
-        Context::new(&self)
+        Box::new(BackendContext::new(&self))
     }
 
     #[cfg(target_arch = "wasm32")]

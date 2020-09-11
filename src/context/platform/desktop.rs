@@ -1,8 +1,7 @@
-use crate::{ContextBuilder, ContextDisplay, GPUContext, ContextInternals};
+use crate::{ContextBuilder, ContextDisplay, GPUContext, HasGLContext, GLContext};
 
 pub use glutin::ContextError;
 use glutin::ContextTrait;
-use std::rc::Rc;
 
 
 // ===============
@@ -13,11 +12,11 @@ use std::rc::Rc;
 pub struct Context {
     events_loop : glutin::EventsLoop,
     context     : glutin::WindowedContext,
-    gl          : Rc<glow::Context>
+    gl          : GLContext
 }
 
-impl ContextInternals for Context {
-    fn internal_context(&self) -> Rc<glow::Context> {
+impl HasGLContext for Context {
+    fn gl_context(&self) -> GLContext {
         self.gl.clone()
     }
 }
@@ -110,7 +109,7 @@ impl Context {
             context.get_proc_address(s) as *const _
         });
 
-        let gl = Rc::new(gl);
+        let gl = GLContext::from_glow_context(gl);
         Self { events_loop, context, gl }
     }
 }

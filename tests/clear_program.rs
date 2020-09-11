@@ -7,7 +7,7 @@ mod clear_program {
     use gpu::ContextDisplay;
     use gpu::ClearProgram;
     use gpu::Framebuffer;
-    use gpu::prelude::*;
+
 
     #[test]
     fn clear_display() {

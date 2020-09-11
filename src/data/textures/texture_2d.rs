@@ -60,14 +60,11 @@ impl Texture2D {
         self.dimensions = dimensions;
         self.format     = format.clone();
         self.bind();
-        self.context.upgrade().map(|context| {
-            let gl = context.internal_context();
-            unsafe {
-                let tex_type        = self.typ();
-                let internal_format = format.internal_format();
-                gl.tex_storage_2d(tex_type, 1, internal_format, dimensions.0 as i32, dimensions.1 as i32);
-            }
-        });
+        unsafe {
+            let tex_type        = self.typ();
+            let internal_format = format.internal_format();
+            self.gl.tex_storage_2d(tex_type, 1, internal_format, dimensions.0 as i32, dimensions.1 as i32);
+        }
     }
 
     /// Gets a copy of the data on the GPU.
@@ -75,17 +72,14 @@ impl Texture2D {
         self.dimensions = dimensions;
         self.format     = format.clone();
         self.bind();
-        self.context.upgrade().map(|context| {
-            let gl = context.internal_context();
-            unsafe {
-                let (color, ty)     = data_format.get_format_type();
-                let internal_format = format.internal_format() as i32;
-                let width           = dimensions.0 as i32;
-                let height          = dimensions.1 as i32;
-                let pixels          = Some(as_u8_slice(data));
-                gl.tex_image_2d(self.typ(),0,internal_format,width,height,0,color,ty,pixels);
-            }
-        });
+        unsafe {
+            let (color, ty)     = data_format.get_format_type();
+            let internal_format = format.internal_format() as i32;
+            let width           = dimensions.0 as i32;
+            let height          = dimensions.1 as i32;
+            let pixels          = Some(as_u8_slice(data));
+            self.gl.tex_image_2d(self.typ(),0,internal_format,width,height,0,color,ty,pixels);
+        }
     }
 
     /// Gets a copy of the data on the GPU.
@@ -93,29 +87,27 @@ impl Texture2D {
         let (width,height)    = self.dimensions();
         let capacity          = width * height * self.format().color_format().size();
         let mut data : Vec<T> = Vec::with_capacity(capacity);
-        self.context.upgrade().map(|context| {
-            let gl = context.internal_context();
-            unsafe {
-                data.set_len(capacity);
+        let gl = &self.gl;
+        unsafe {
+            data.set_len(capacity);
 
-                //FIXME: Pre-create a transfer framebuffer in Context.
-                let fb = gl.create_framebuffer().expect("Couldn't create Framebuffer");
-                gl.bind_framebuffer(glow::FRAMEBUFFER, Some(fb));
-                gl.framebuffer_texture_2d(glow::FRAMEBUFFER,
-                                          glow::COLOR_ATTACHMENT0,
-                                          glow::TEXTURE_2D,
-                                          Some(self.resource()),
-                                          0);
+            //FIXME: Pre-create a transfer framebuffer in Context.
+            let fb = gl.create_framebuffer().expect("Couldn't create Framebuffer");
+            gl.bind_framebuffer(glow::FRAMEBUFFER, Some(fb));
+            gl.framebuffer_texture_2d(glow::FRAMEBUFFER,
+                                      glow::COLOR_ATTACHMENT0,
+                                      glow::TEXTURE_2D,
+                                      Some(self.resource()),
+                                      0);
 
-                let (format, ty) = self.format().get_format_type();
-                let pixels       = glow::PixelPackData::Slice(as_u8_mut_slice(data.as_mut()));
-                let (width, height) = self.dimensions();
-                gl.read_pixels(0, 0, width as i32, height as i32, format, ty, pixels);
+            let (format, ty) = self.format().get_format_type();
+            let pixels       = glow::PixelPackData::Slice(as_u8_mut_slice(data.as_mut()));
+            let (width, height) = self.dimensions();
+            gl.read_pixels(0, 0, width as i32, height as i32, format, ty, pixels);
 
-                gl.bind_framebuffer(glow::FRAMEBUFFER, None);
-                gl.delete_framebuffer(fb);
-            }
-        });
+            gl.bind_framebuffer(glow::FRAMEBUFFER, None);
+            gl.delete_framebuffer(fb);
+        }
         data
     }
 }

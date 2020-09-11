@@ -13,7 +13,7 @@ mod clear_program {
     use gpu::RasterGeometry;
     use gpu::Buffer;
     use gpu::VertexArrayObject;
-    use gpu::prelude::*;
+
 
 
     #[test]

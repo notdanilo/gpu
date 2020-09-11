@@ -1,12 +1,12 @@
 use crate::prelude::*;
 use crate::data::Buffer;
-use crate::{Context, WeakContext};
+use crate::{Context, GLContext};
 
 type VertexArrayObjectResource = <glow::Context as HasContext>::VertexArray;
 
 /// `VertexArrayObject` representation.
 pub struct VertexArrayObject {
-    context  : WeakContext,
+    gl       : GLContext,
     resource : VertexArrayObjectResource,
     vertices : u32
 }
@@ -14,13 +14,12 @@ pub struct VertexArrayObject {
 impl VertexArrayObject {
     /// Creates a new `VertexArrayObject`.
     pub fn new(context:&Context) -> Self {
-        let gl = context.internal_context();
+        let gl = context.gl_context();
         let resource = unsafe {
             gl.create_vertex_array().expect("Couldn't create VertexArrayObject")
         };
         let vertices = 0;
-        let context = context.weak_ref();
-        Self {context,resource,vertices}
+        Self { gl, resource, vertices }
     }
 
     pub(crate) fn resource(&self) -> VertexArrayObjectResource {
@@ -28,24 +27,20 @@ impl VertexArrayObject {
     }
 
     pub(crate) fn bind(&self) {
-        self.context.upgrade().map(|context| {
-            unsafe {
-                context.internal_context().bind_vertex_array(Some(self.resource()));
-            }
-        });
+        unsafe {
+            self.gl.bind_vertex_array(Some(self.resource()));
+        }
     }
 
     /// Sets a `Buffer` as a vertices sources, where each vertex has `n_elements`
     pub fn set_vertex_buffer(&mut self, buffer : &Buffer, attribute_index: u32, n_elements: u32) {
-        self.context.upgrade().map(|context| {
-            let gl = context.internal_context();
-            self.bind();
-            buffer.bind();
-            unsafe {
-                gl.enable_vertex_attrib_array(attribute_index);
-                gl.vertex_attrib_pointer_f32(attribute_index, n_elements as i32, glow::FLOAT, false, 0, 0);
-            }
-        });
+        let gl = &self.gl;
+        self.bind();
+        buffer.bind();
+        unsafe {
+            gl.enable_vertex_attrib_array(attribute_index);
+            gl.vertex_attrib_pointer_f32(attribute_index, n_elements as i32, glow::FLOAT, false, 0, 0);
+        }
     }
 
     /// Sets the number of vertices.
@@ -70,10 +65,8 @@ impl VertexArrayObject {
 
 impl Drop for VertexArrayObject {
     fn drop(&mut self) {
-        self.context.upgrade().map(|context| {
-            unsafe {
-                context.internal_context().delete_vertex_array(self.resource());
-            }
-        });
+        unsafe {
+            self.gl.delete_vertex_array(self.resource());
+        }
     }
 }

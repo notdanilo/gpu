@@ -1,11 +1,11 @@
 use crate::prelude::*;
-use crate::{Context, WeakContext};
+use crate::{Context, GLContext};
 
 type RenderbufferResource = <glow::Context as HasContext>::Renderbuffer;
 
 /// Renderbuffer representation.
 pub struct Renderbuffer {
-    context  : WeakContext,
+    gl       : GLContext,
     resource : RenderbufferResource
 }
 
@@ -13,13 +13,13 @@ impl Renderbuffer {
     /// Creates a default `Renderbuffer`.
     pub fn default(context:&Context) -> Self {
         let resource = Default::default();
-        let context = context.weak_ref();
-        Self {resource,context}
+        let gl       = context.gl_context();
+        Self { resource, gl }
     }
 
     /// Creates a new `Renderbuffer` with `(width, height)` dimensions.
     pub fn new(context:&Context, width: u32, height: u32) -> Self {
-        let gl       = context.internal_context();
+        let gl       = context.gl_context();
         let width    = width as i32;
         let height   = height as i32;
         let resource = unsafe {
@@ -28,8 +28,7 @@ impl Renderbuffer {
             gl.renderbuffer_storage(glow::RENDERBUFFER, glow::DEPTH_COMPONENT, width, height);
             resource
         };
-        let context = context.weak_ref();
-        Self {context,resource}
+        Self { gl, resource }
     }
 
     /// Gets the `RenderbufferResource`.
@@ -40,10 +39,8 @@ impl Renderbuffer {
 
 impl Drop for Renderbuffer {
     fn drop(&mut self) {
-        self.context.upgrade().map(|context| {
-            unsafe {
-                context.internal_context().delete_renderbuffer(self.resource());
-            }
-        });
+        unsafe {
+            self.gl.delete_renderbuffer(self.resource());
+        }
     }
 }

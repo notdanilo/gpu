@@ -5,7 +5,7 @@ mod context {
     use super::utils::test;
     use gpu::ContextBuilder;
     use gpu::ContextDisplay;
-    use gpu::prelude::*;
+
 
     #[test]
     fn create_context() {

@@ -1,8 +1,5 @@
-use crate::{Framebuffer, ContextInternals};
-
-use crate::Context;
-use crate::WeakContext;
-use glow::HasContext;
+use crate::prelude::*;
+use crate::{Context, Framebuffer, GLContext};
 
 
 
@@ -12,8 +9,8 @@ use glow::HasContext;
 
 /// A program that clears colors, depth and stencil of a `framebuffer`.
 pub struct ClearProgram {
-    context : WeakContext,
-    color : (f32, f32, f32, f32),
+    gl: GLContext,
+    color: (f32, f32, f32, f32),
     depth: f32,
     stencil: i32
 }
@@ -28,11 +25,11 @@ impl ClearProgram {
 
     /// Creates a new `ClearProgram`.
     pub fn new(context:&Context) -> Self {
-        let context = context.weak_ref();
+        let gl = context.gl_context();
         let color = (0.0, 0.0, 0.0, 0.0);
-        let depth = 1.0; // is it default?
-        let stencil = 0; // is it default?
-        Self {context,color,depth,stencil}
+        let depth = 1.0; // FIXME: is it default?
+        let stencil = 0; // FIXME: is it default?
+        Self { gl, color, depth, stencil}
     }
 
     /// Sets the color clear value.
@@ -56,15 +53,13 @@ impl ClearProgram {
     /// clear(framebuffer, ClearProgram::COLOR | ClearProgram::DEPTH | ClearProgram::STENCIL)
     /// ```
     pub fn clear(&self, framebuffer:&mut Framebuffer, clear_mask: u32) {
-        self.context.upgrade().map(|context| {
-            let gl = &context.internal_context();
-            unsafe {
-                framebuffer.bind();
-                gl.clear_color(self.color.0, self.color.1, self.color.2, self.color.3);
-                gl.clear_depth_f32(self.depth);
-                gl.clear_stencil(self.stencil);
-                gl.clear(clear_mask);
-            }
-        });
+        let gl = &self.gl;
+        unsafe {
+            framebuffer.bind();
+            gl.clear_color(self.color.0, self.color.1, self.color.2, self.color.3);
+            gl.clear_depth_f32(self.depth);
+            gl.clear_stencil(self.stencil);
+            gl.clear(clear_mask);
+        }
     }
 }

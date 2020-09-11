@@ -6,7 +6,7 @@ mod buffer {
     use gpu::ContextBuilder;
     use gpu::ContextDisplay;
     use gpu::Buffer;
-    use gpu::prelude::*;
+
 
     #[test]
     fn allocation() {
