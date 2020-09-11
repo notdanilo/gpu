@@ -3,6 +3,24 @@ name: Build (MacOS, Linux, Windows)
 on: [push]
 
 jobs:
+  build-web:
+    name: Build - web
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Install Rust Toolchain
+        uses: action-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      - name: Install wasm-pack
+        uses: actions-rs/cargo@v1
+        with:
+          command: install
+          args: wasm-pack
+      - name: Run wasm-pack build
+        run: wasm-pack build
+
   build:
     name: Build
     runs-on: ${{ matrix.os }}
