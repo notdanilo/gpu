@@ -1,5 +1,8 @@
 //! # GPU
 //! An ergonomic GPU API.
+//!
+//! ## Examples
+//! Better examples will be provided in the future. For now, please check the [tests](https://github.com/notdanilo/gpu/tree/master/tests).
 
 //TODO: Define a new Error type and get rid of expect/unwrap calls.
 //FIXME: We need to type the same documentation for every Context implementation. Maybe we should
