@@ -1,23 +1,25 @@
+use crate::prelude::*;
 use crate::data::Texture2D;
 use crate::data::Renderbuffer;
-use crate::Context;
-use glow::HasContext;
+use crate::{Context, GLContext};
+
 
 type FramebufferResource = <glow::Context as HasContext>::Framebuffer;
 
-enum FramebufferAttachment<'context> {
-    Texture(Texture2D<'context>),
-    Renderbuffer(Renderbuffer<'context>),
+enum FramebufferAttachment {
+    Texture(Texture2D),
+    Renderbuffer(Renderbuffer),
     None
 }
 
-pub struct Framebuffer<'context> {
-    context    : &'context Context,
+/// A Framebuffer representation with optional `color`, `depth` and `stencil` attachments.
+pub struct Framebuffer {
+    gl         : GLContext,
     resource   : FramebufferResource,
     dimensions : (usize, usize),
-    color      : FramebufferAttachment<'context>,
-    _depth     : FramebufferAttachment<'context>,
-    _stencil   : FramebufferAttachment<'context>
+    color      : FramebufferAttachment,
+    _depth     : FramebufferAttachment,
+    _stencil   : FramebufferAttachment
 }
 
 //FIXME: Incomplete implementation
@@ -27,14 +29,16 @@ pub struct Framebuffer<'context> {
 // 4. Lacks checking for returning Result::Err
 // 5. Check attachment dimensions (does framebuffer completeness check takes that into account?)
 
-impl<'context> Framebuffer<'context> {
-    pub fn default(context:&'context Context) -> Self {
+impl Framebuffer {
+    /// The default `Framebuffer` created during the `Context` creation.
+    pub fn default(context:&Context) -> Self {
         let dimensions = context.inner_dimensions();
         let resource   = Default::default();
         let color      = FramebufferAttachment::Renderbuffer(Renderbuffer::default(context));
         let _depth     = FramebufferAttachment::Renderbuffer(Renderbuffer::default(context));
         let _stencil   = FramebufferAttachment::Renderbuffer(Renderbuffer::default(context));
-        Self {context,resource,dimensions,color,_depth,_stencil}
+        let gl         = context.gl_context();
+        Self { gl, resource, dimensions, color, _depth, _stencil }
     }
 
     pub(crate) fn resource(&self) -> FramebufferResource {
@@ -42,7 +46,7 @@ impl<'context> Framebuffer<'context> {
     }
 
     pub(crate) fn bind(&self) {
-        let gl       = &self.context.gl;
+        let gl       = &self.gl;
         let resource = self.resource();
         let resource = if resource == Default::default() { None } else { Some(resource) };
         unsafe {
@@ -50,11 +54,12 @@ impl<'context> Framebuffer<'context> {
         }
     }
 
+    /// Creates a new `Framebuffer` with optional `color`, `depth` and `stencil`.
     pub fn new
-    (context:&'context Context, color: Option<Texture2D<'context>>,
-     depth:Option<Texture2D<'context>>, stencil:Option<Texture2D<'context>>) -> Result<Self,
+    (context:&Context, color: Option<Texture2D>,
+     depth:Option<Texture2D>, stencil:Option<Texture2D>) -> Result<Self,
         String> {
-        let gl       = &context.gl;
+        let gl       = context.gl_context();
         let resource = unsafe {
             let resource = gl.create_framebuffer().expect("Couldn't create Framebuffer");
             gl.bind_framebuffer(glow::FRAMEBUFFER, Some(resource));
@@ -82,11 +87,13 @@ impl<'context> Framebuffer<'context> {
             None => FramebufferAttachment::None
         };
 
-        Ok(Self {context,resource,dimensions,color,_depth,_stencil})
+        Ok(Self {gl, resource, dimensions, color, _depth, _stencil})
     }
 
+    /// Gets the `Framebuffer`'s dimension.
     pub fn dimensions(&self) -> (usize, usize) { self.dimensions }
 
+    /// Returns the `Texture2D` used as the `ColorBuffer` if any.
     pub fn color(&self) -> Option<&Texture2D> {
         match &self.color {
             FramebufferAttachment::Texture(texture) => Some(&texture),
@@ -95,10 +102,10 @@ impl<'context> Framebuffer<'context> {
     }
 }
 
-impl<'context> Drop for Framebuffer<'context> {
+impl Drop for Framebuffer {
     fn drop(&mut self) {
         unsafe {
-            self.context.gl.delete_framebuffer(self.resource());
+            self.gl.delete_framebuffer(self.resource());
         }
     }
 }

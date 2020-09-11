@@ -1,16 +1,18 @@
-use crate::Context;
-use glow::HasContext;
+use crate::prelude::*;
+use crate::{Context, GLContext};
 
 type ShaderResource = <glow::Context as HasContext>::Shader;
 
-pub struct Shader<'context> {
+/// A shader representation.
+pub struct Shader {
     resource : ShaderResource,
-    context  : &'context Context
+    gl       : GLContext
 }
 
-impl<'context> Shader<'context> {
-    pub fn new(context:&'context Context, shader_type:u32, source:&str) -> Result<Self, String> {
-        let gl       = &context.gl;
+impl Shader {
+    /// Creates a new `Shader`.
+    pub fn new(context:&Context, shader_type:u32, source:&str) -> Result<Self, String> {
+        let gl       = context.gl_context();
         let resource = unsafe { gl.create_shader(shader_type)? };
         unsafe {
             gl.shader_source(resource, source);
@@ -20,16 +22,17 @@ impl<'context> Shader<'context> {
                 return Err(gl.get_shader_info_log(resource));
             }
         }
-        Ok(Self {resource,context})
+        Ok(Self {resource,gl})
     }
 
+    /// Gets the `ShaderResource`.
     pub fn resource(&self) -> ShaderResource { self.resource }
 }
 
-impl<'context> Drop for Shader<'context> {
+impl Drop for Shader {
     fn drop(&mut self) {
         unsafe {
-            self.context.gl.delete_shader(self.resource());
+            self.gl.delete_shader(self.resource());
         }
     }
 }

@@ -1,22 +1,71 @@
-use crate::context::ContextBuilder;
-use crate::context::ContextDisplay;
+use crate::{ContextBuilder, ContextDisplay, HasContext, HasGLContext, GLContext};
 
 pub use glutin::ContextError;
 use glutin::ContextTrait;
-
 
 
 // ===============
 // === Context ===
 // ===============
 
+/// GPU `Context` representation.
 pub struct Context {
     events_loop : glutin::EventsLoop,
     context     : glutin::WindowedContext,
-    pub gl      : glow::Context
+    gl          : GLContext
+}
+
+impl HasGLContext for Context {
+    fn gl_context(&self) -> GLContext {
+        self.gl.clone()
+    }
+}
+
+impl HasContext for Context {
+    fn run(&mut self) -> bool {
+        let events_loop = &mut self.events_loop;
+        let context = &mut self.context;
+        let mut available = true;
+        events_loop.poll_events(|event| {
+            if let glutin::Event::WindowEvent{ event, .. } = event {
+                match event {
+                    glutin::WindowEvent::CloseRequested => available = false,
+                    glutin::WindowEvent::Resized(logical_size) => {
+                        let dpi_factor = context.get_hidpi_factor();
+                        context.resize(logical_size.to_physical(dpi_factor));
+                    },
+                    _ => ()
+                }
+            }
+        });
+        available
+    }
+
+    fn make_current(&self) -> Result<(), ContextError> {
+        unsafe {
+            self.context.make_current()
+
+        }
+    }
+
+    fn swap_buffers(&self) -> Result<(), ContextError> {
+        self.context.swap_buffers()
+    }
+
+    fn get_proc_address(&self, addr: &str) -> *const () {
+        self.context.get_proc_address(addr)
+    }
+
+    fn inner_dimensions(&self) -> (usize, usize) {
+        let dpi      = self.context.get_hidpi_factor();
+        let logical  = self.context.get_inner_size().expect("Couldn't get inner size");
+        let physical = logical.to_physical(dpi);
+        (physical.width as usize, physical.height as usize)
+    }
 }
 
 impl Context {
+    /// Creates a new `Context`.
     pub fn new(builder:&ContextBuilder) -> Self {
         let events_loop = glutin::EventsLoop::new();
         let mut window_builder = glutin::WindowBuilder::new();
@@ -52,52 +101,17 @@ impl Context {
 
         context.hide_cursor(!builder.cursor);
 
-        let gl = glow::Context::from_loader_function(|s| {
-            context.get_proc_address(s) as *const _
-        });
-
-        Self{events_loop,context,gl}
-    }
-
-
-    pub fn run(&mut self) -> bool {
-        let events_loop = &mut self.events_loop;
-        let context = &mut self.context;
-        let mut available = true;
-        events_loop.poll_events(|event| {
-            if let glutin::Event::WindowEvent{ event, .. } = event {
-                match event {
-                    glutin::WindowEvent::CloseRequested => available = false,
-                    glutin::WindowEvent::Resized(logical_size) => {
-                        let dpi_factor = context.get_hidpi_factor();
-                        context.resize(logical_size.to_physical(dpi_factor));
-                    },
-                    _ => ()
-                }
-            }
-        });
-        available
-    }
-
-    pub fn make_current(&self) -> Result<(), ContextError> {
         unsafe {
-            self.context.make_current()
-
+            context.make_current().expect("Context make current failed.");
         }
-    }
 
-    pub fn swap_buffers(&self) -> Result<(), ContextError> {
-        self.context.swap_buffers()
-    }
+        let gl = unsafe {
+            glow::Context::from_loader_function(|s| {
+                context.get_proc_address(s) as *const _
+            })
+        };
 
-    pub fn get_proc_address(&self, addr: &str) -> *const () {
-        self.context.get_proc_address(addr)
-    }
-
-    pub fn inner_dimensions(&self) -> (usize, usize) {
-        let dpi      = self.context.get_hidpi_factor();
-        let logical  = self.context.get_inner_size().expect("Couldn't get inner size");
-        let physical = logical.to_physical(dpi);
-        (physical.width as usize, physical.height as usize)
+        let gl = GLContext::from_glow_context(gl);
+        Self { events_loop, context, gl }
     }
 }

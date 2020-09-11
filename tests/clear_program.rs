@@ -8,6 +8,7 @@ mod clear_program {
     use gpu::ClearProgram;
     use gpu::Framebuffer;
 
+
     #[test]
     fn clear_display() {
         let dimension = (320, 240);

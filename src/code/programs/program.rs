@@ -2,26 +2,32 @@
 //use crate::data::Texture;
 //use crate::data::Sampler;
 
-use crate::Context;
-use glow::HasContext;
+use crate::prelude::*;
+use crate::{Context, GLContext};
 
 type ProgramResource = <glow::Context as HasContext>::Program;
 
-pub struct Program<'context> {
-    pub(crate) context : &'context Context,
+/// A structure representing a GPU program.
+pub struct Program {
+    pub(crate) gl      : GLContext,
     resource           : ProgramResource
 }
 
-impl<'context> Program<'context> {
-    pub fn new(context:&'context Context) -> Self {
+impl Program {
+    /// Creates a new `Program`.
+    pub fn new(context: &Context) -> Self {
+        let gl = context.gl_context();
         let resource = unsafe {
-            context.gl.create_program().expect("Couldn't create program")
+            gl.create_program().expect("Couldn't create program")
         };
-        Self {context,resource}
+        Self { gl, resource}
     }
 
+    /// Gets the `ProgramResource` object.
     pub fn resource(&self) -> ProgramResource { self.resource }
 
+// FIXME: These parts were removed because glow uses a minimum set of GL x GLES x WEBGL.
+// These functions can be included in a trait which can be implemented for backends that supports it.
 //    fn bind_buffer(&mut self, buffer: &Buffer, index: u32) {
 //        unsafe {
 //            self::BindBufferBase(gl::SHADER_STORAGE_BUFFER, index, buffer.get_id());
@@ -47,10 +53,10 @@ impl<'context> Program<'context> {
 //    }
 }
 
-impl Drop for Program<'_> {
+impl Drop for Program {
     fn drop(&mut self) {
         unsafe {
-            self.context.gl.delete_program(self.resource());
+            self.gl.delete_program(self.resource());
         }
     }
 }

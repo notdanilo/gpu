@@ -1,3 +1,4 @@
+use crate::prelude::*;
 use crate::Context;
 
 use glow::HasContext;
@@ -8,24 +9,28 @@ use crate::VertexShader;
 use crate::VertexArrayObject;
 use crate::Framebuffer;
 
-use shrinkwraprs::Shrinkwrap;
-
+/// A program for rasterizing `VertexArrayObject`s in a target `Framebuffer`.
 #[derive(Shrinkwrap)]
 #[shrinkwrap(mutable)]
-pub struct RasterProgram<'context> {
+pub struct RasterProgram {
+    /// Program base object.
     #[shrinkwrap(main_field)]
-    pub program : Program<'context>,
+    pub program : Program,
 }
 
+/// Kinds of raster geometries.
 pub enum RasterGeometry {
+    /// Raster three consecutive vertices as a triangle.
     Triangles = glow::TRIANGLES as isize,
+    /// Raster each vertex as a point.
     Points    = glow::POINTS as isize
 }
 
-impl<'context> RasterProgram<'context> {
-    pub fn new(context:&'context Context, fragment_shader:&FragmentShader, vertex_shader:&VertexShader) -> Result<Self, String> {
+impl RasterProgram {
+    /// Creates a new `RasterProgram` with a `FragmentShader` and ` VertexShader`.
+    pub fn new(context:&Context, fragment_shader:&FragmentShader, vertex_shader:&VertexShader) -> Result<Self, String> {
         let program = Program::new(context);
-        let gl      = &context.gl;
+        let gl      = context.gl_context();
         unsafe {
             gl.attach_shader(program.resource(), vertex_shader.resource());
             gl.attach_shader(program.resource(), fragment_shader.resource());
@@ -42,20 +47,21 @@ impl<'context> RasterProgram<'context> {
 
     pub(crate) fn use_(&self) {
         unsafe {
-            self.context.gl.use_program(Some(self.resource()));
+            self.gl.use_program(Some(self.resource()));
         }
     }
 
-    pub fn raster(&self, framebuffer: &Framebuffer, vao: &VertexArrayObject, geometry : RasterGeometry, elements: u32) {
-        let gl = &self.context.gl;
+    /// Draws the `n_vertices` in a `VertexArrayObject` as the specified `RasterGeometry` on the target `Framebuffer`.
+    pub fn raster(&self, framebuffer: &Framebuffer, vertex_array_object: &VertexArrayObject, raster_geometry: RasterGeometry, n_vertices: u32) {
+        let gl = &self.gl;
         unsafe {
             framebuffer.bind();
             self.use_();
-            vao.bind();
+            vertex_array_object.bind();
             gl.enable(glow::PROGRAM_POINT_SIZE);
             let (width,height) = framebuffer.dimensions();
             gl.viewport(0, 0, width as i32, height as i32);
-            gl.draw_arrays(geometry as u32, 0, elements as i32);
+            gl.draw_arrays(raster_geometry as u32, 0, n_vertices as i32);
         }
     }
 }

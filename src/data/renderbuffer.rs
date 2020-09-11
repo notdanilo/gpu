@@ -1,21 +1,25 @@
-use crate::Context;
-use glow::HasContext;
+use crate::prelude::*;
+use crate::{Context, GLContext};
 
 type RenderbufferResource = <glow::Context as HasContext>::Renderbuffer;
 
-pub struct Renderbuffer<'context> {
-    context  : &'context Context,
+/// Renderbuffer representation.
+pub struct Renderbuffer {
+    gl       : GLContext,
     resource : RenderbufferResource
 }
 
-impl<'context> Renderbuffer<'context> {
-    pub fn default(context:&'context Context) -> Self {
+impl Renderbuffer {
+    /// Creates a default `Renderbuffer`.
+    pub fn default(context:&Context) -> Self {
         let resource = Default::default();
-        Self {resource,context}
+        let gl       = context.gl_context();
+        Self { resource, gl }
     }
 
-    pub fn new(context:&'context Context, width: u32, height: u32) -> Self {
-        let gl       = &context.gl;
+    /// Creates a new `Renderbuffer` with `(width, height)` dimensions.
+    pub fn new(context:&Context, width: u32, height: u32) -> Self {
+        let gl       = context.gl_context();
         let width    = width as i32;
         let height   = height as i32;
         let resource = unsafe {
@@ -24,18 +28,19 @@ impl<'context> Renderbuffer<'context> {
             gl.renderbuffer_storage(glow::RENDERBUFFER, glow::DEPTH_COMPONENT, width, height);
             resource
         };
-        Self {context,resource}
+        Self { gl, resource }
     }
 
+    /// Gets the `RenderbufferResource`.
     pub fn resource(&self) -> RenderbufferResource {
         self.resource
     }
 }
 
-impl<'context> Drop for Renderbuffer<'context> {
+impl Drop for Renderbuffer {
     fn drop(&mut self) {
         unsafe {
-            self.context.gl.delete_renderbuffer(self.resource());
+            self.gl.delete_renderbuffer(self.resource());
         }
     }
 }

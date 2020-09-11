@@ -14,6 +14,8 @@ mod clear_program {
     use gpu::Buffer;
     use gpu::VertexArrayObject;
 
+
+
     #[test]
     fn draw_to_display() {
         let components = 3;
@@ -90,7 +92,7 @@ mod clear_program {
 
     #[test]
     fn draw_to_texture2d() {
-        use gpu::{Texture2D, ColorFormat, TextureFormat, ComponentFormat, Buffer};
+        use gpu::{Texture2D, ColorFormat, TextureFormat, Type, Buffer};
 
         let context_builder = ContextBuilder::new().with_display(ContextDisplay::None);
         let context = context_builder.build();
@@ -118,7 +120,7 @@ mod clear_program {
             .unwrap();
 
         let components = 4;
-        let format = TextureFormat::new(ColorFormat::components(components), ComponentFormat::F32);
+        let format = TextureFormat::new(ColorFormat::components(components), Type::F32);
         let dimension = (8, 8);
         let color = Texture2D::allocate(&context, dimension, &format);
         let framebuffer = Framebuffer::new(&context, Some(color), None, None).unwrap();
@@ -138,11 +140,8 @@ mod clear_program {
         vao.set_vertex_buffer(&buffer, 0, 3);
 
         raster_program.raster(&framebuffer, &vao, RasterGeometry::Points, 1);
-        let data_out : Vec<f32> = framebuffer.color().unwrap().get_data();
+        let data_out : Vec<f32> = framebuffer.color().unwrap().data();
 
-//        unsafe {
-//            assert_eq!(context.gl.get_error(), 0);
-//        }
-//        assert_eq!(expected_data, data_out);
+       assert_eq!(expected_data, data_out);
     }
 }

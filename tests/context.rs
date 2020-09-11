@@ -6,6 +6,7 @@ mod context {
     use gpu::ContextBuilder;
     use gpu::ContextDisplay;
 
+
     #[test]
     fn create_context() {
         let context_builder = ContextBuilder::new().with_display(ContextDisplay::None);

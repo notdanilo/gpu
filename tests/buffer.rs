@@ -7,6 +7,7 @@ mod buffer {
     use gpu::ContextDisplay;
     use gpu::Buffer;
 
+
     #[test]
     fn allocation() {
         let context_builder = ContextBuilder::new().with_display(ContextDisplay::None);
@@ -15,7 +16,7 @@ mod buffer {
         context.make_current().unwrap();
 
         let buffer = Buffer::allocate(&context,12345);
-        assert_eq!(buffer.get_size(), 12345);
+        assert_eq!(buffer.size(), 12345);
     }
 
     #[test]
@@ -29,7 +30,7 @@ mod buffer {
         for i in 0..10 { data_in.push(i as f32); }
 
         let buffer = Buffer::from_data(&context,&data_in);
-        let data_out = buffer.get_data();
+        let data_out = buffer.data();
 
         assert_eq!(data_in, data_out);
     }

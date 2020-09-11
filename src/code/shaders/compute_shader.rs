@@ -1,7 +1,6 @@
+use crate::prelude::*;
 use crate::code::shaders::shader::Shader;
 use crate::Context;
-
-use shrinkwraprs::Shrinkwrap;
 
 #[derive(Shrinkwrap)]
 pub struct ComputeShader<'context> {

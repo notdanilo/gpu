@@ -1,31 +1,27 @@
 [package]
 name          = "gpu"
-version       = "0.1.4"
+version       = "0.2.1"
 authors       = ["Danilo Guanabara <danguafer@gmail.com>"]
 edition       = "2018"
 license       = "Apache-2.0"
 description   = "An ergonomic GPU API"
-documentation = "https://docs.rs/gpu/0.1.0/gpu/"
 readme        = "README.md"
+documentation = "https://docs.rs/gpu"
 repository    = "https://github.com/danguafer/gpu"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
-#glow         = "0.4.0"
-glow         = { git = "https://github.com/grovesNL/glow/" }
+glow         = "0.6.0"
 shrinkwraprs = "0.3.0"
 
 [target.'cfg(not(any(target_arch = "wasm32")))'.dependencies]
 glutin = "0.20.0"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-web_sys      = { version = "0.3", package = "web-sys",features = ["console","Document",
-"Node", "Element", "HtmlElement", "HtmlCanvasElement", "Window", "Navigator"] }
+web_sys      = { version = "0.3", package = "web-sys",features = ["console","Document", "Node", "Element", "HtmlElement", "HtmlCanvasElement"] }
 wasm-bindgen = { version = "0.2" }
 
 [target.'cfg(target_arch = "wasm32")'.dev-dependencies]
-wasm-bindgen-test = "0.2"
+wasm-bindgen-test = "0.3.17"

@@ -1,67 +1,48 @@
+//! Context creation module.
+
+mod context_display;
+pub use context_display::ContextDisplay;
+
+mod context_builder;
+pub use context_builder::ContextBuilder;
+
+pub mod backend;
+pub(crate) use backend::gl_context::{GLContext, HasGLContext};
+
+/// A trait defining the `GPUContext` interface.
+pub trait HasContext: HasGLContext {
+    /// Runs the `Context` and returns `false` if the `Context` is no longer available.
+    fn run(&mut self) -> bool;
+
+    /// Makes the `Context` current for the current thread.
+    fn make_current(&self) -> Result<(), ContextError>;
+
+    /// Swap buffers for presenting in the `ContextDisplay`.
+    fn swap_buffers(&self) -> Result<(), ContextError>;
+
+    /// OpenGL function dynamic loading.
+    fn get_proc_address(&self, addr: &str) -> *const ();
+
+    /// Gets the inner dimensions of the `ContextDisplay`.
+    fn inner_dimensions(&self) -> (usize, usize);
+}
+
+/// The `Context` object.
+pub type Context = Box<dyn HasContext>;
+
 #[cfg(not(all(target_arch = "wasm32")))]
 mod platform {
     mod desktop;
-    pub use desktop::Context;
+    pub use desktop::Context as BackendContext;
+    pub use desktop::ContextError;
 }
 
 #[cfg(all(target_arch = "wasm32"))]
 mod platform {
     mod web;
-    pub use web::Context;
+    pub use web::Context as BackendContext;
+    pub use web::ContextError;
 }
 
-pub use platform::Context;
-
-// ======================
-// === ContextDisplay ===
-// ======================
-
-pub enum ContextDisplay {
-    None,
-    Screen,
-    Window(String, usize, usize)
-}
-
-
-
-// ======================
-// === ContextBuilder ===
-// ======================
-
-pub struct ContextBuilder {
-    cursor  : bool,
-    vsync   : bool,
-    display : ContextDisplay
-}
-
-impl Default for ContextBuilder {
-    fn default() -> Self {
-        let cursor  = false;
-        let vsync   = true;
-        let display = ContextDisplay::Screen;
-        Self {cursor,vsync,display}
-    }
-}
-
-impl ContextBuilder {
-    pub fn new() -> Self { Default::default() }
-
-    pub fn with_display(mut self, display:ContextDisplay) -> Self {
-        self.display = display;
-        self
-    }
-
-    pub fn cursor(mut self, cursor:bool) -> Self {
-        self.cursor = cursor;
-        self
-    }
-
-    pub fn vsync(mut self, vsync:bool) -> Self {
-        self.vsync = vsync;
-        self
-    }
-
-    pub fn build(self) -> Context {
-        Context::new(&self)
-    }
-}
+/// The Context object.
+pub use platform::*;
