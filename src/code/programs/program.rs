@@ -26,6 +26,12 @@ impl Program {
     /// Gets the `ProgramResource` object.
     pub fn resource(&self) -> ProgramResource { self.resource }
 
+    pub fn uniform_mat4(&mut self, location: usize, transpose: bool, v: &[f32]) {
+        unsafe {
+            self.gl.gl.uniform_matrix_4_f32_slice(Some(location as u32).as_ref(), transpose, v);
+        }
+    }
+
 // FIXME: These parts were removed because glow uses a minimum set of GL x GLES x WEBGL.
 // These functions can be included in a trait which can be implemented for backends that supports it.
 //    fn bind_buffer(&mut self, buffer: &Buffer, index: u32) {
