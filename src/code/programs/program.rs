@@ -9,8 +9,8 @@ type ProgramResource = <glow::Context as HasContext>::Program;
 
 /// A structure representing a GPU program.
 pub struct Program {
-    pub(crate) gl      : GLContext,
-    resource           : ProgramResource
+    pub(crate) gl : GLContext,
+    resource      : ProgramResource
 }
 
 impl Program {
