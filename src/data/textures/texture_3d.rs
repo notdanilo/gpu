@@ -2,14 +2,12 @@ use crate::prelude::*;
 use crate::Context;
 
 use crate::data::as_u8_slice;
-use crate::data::as_u8_mut_slice;
-
-use glow::HasContext;
 
 use crate::TextureFormat;
 use crate::ColorFormat;
 use crate::Type;
 use crate::Texture;
+use std::ffi::c_void;
 
 /// A `Texture3D` representation.
 #[derive(Shrinkwrap)]
@@ -24,7 +22,7 @@ pub struct Texture3D {
 impl Texture3D {
     fn new(context:&Context) -> Self {
         let format     = TextureFormat::new(ColorFormat::RGBA, Type::F32);
-        let texture    = Texture::new(context,format,glow::TEXTURE_3D);
+        let texture    = Texture::new(context,format,gl::TEXTURE_3D);
         let dimensions = (0,0,0);
         Self {texture,dimensions}
     }
@@ -56,9 +54,9 @@ impl Texture3D {
         self.format = format.clone();
         self.bind();
         unsafe {
-            let tex_type        = self.typ();
+            let tex_type        = self.type_();
             let internal_format = format.internal_format();
-            self.gl.tex_storage_3d(tex_type, 1, internal_format, dimensions.0 as i32, dimensions.1 as
+            gl::TexStorage3D(tex_type, 1, internal_format, dimensions.0 as i32, dimensions.1 as
                 i32, dimensions.2 as i32);
         }
     }
@@ -75,42 +73,44 @@ impl Texture3D {
             let width           = dimensions.0 as i32;
             let height          = dimensions.1 as i32;
             let depth           = dimensions.2 as i32;
-            let pixels          = Some(as_u8_slice(data));
-            self.gl.tex_image_3d(self.typ(),0,internal_format,width,height,depth,0,color,ty,pixels);
+            let pixels          = as_u8_slice(data);
+            gl::TexImage3D(self.type_(),0,internal_format,width,height,depth,0,color,ty,data.as_ptr() as *const c_void);
         }
     }
 
     /// Gets a copy of the data on the GPU.
     pub fn data<T>(&self) -> Vec<T> {
-        let (width,height,depth) = self.dimensions();
-        let color_size           = self.format().color_format().size();
-        let capacity             = width * height * depth * color_size;
-        let mut data : Vec<T>    = Vec::with_capacity(capacity);
-        let gl = &self.gl;
-        unsafe {
-            data.set_len(capacity);
-
-            //FIXME: Pre-create a transfer framebuffer in Context.
-            let fb = gl.create_framebuffer().expect("Couldn't create Framebuffer");
-
-            for depth in 0..depth {
-                gl.bind_framebuffer(glow::FRAMEBUFFER, Some(fb));
-                gl.framebuffer_texture_layer(glow::FRAMEBUFFER,
-                                             glow::COLOR_ATTACHMENT0,
-                                             Some(self.resource()),
-                                             0,
-                                             depth as i32);
-
-                let (format, ty) = self.format().get_format_type();
-                let offset = width * height * depth * color_size;
-                let pixels = glow::PixelPackData::Slice(&mut as_u8_mut_slice(data.as_mut())[offset..]);
-                let (width, height, _) = self.dimensions();
-                gl.read_pixels(0, 0, width as i32, height as i32, format, ty, pixels);
-            }
-
-            gl.bind_framebuffer(glow::FRAMEBUFFER, None);
-            gl.delete_framebuffer(fb);
-        }
-        data
+        Vec::new()
+        // FIXME: Read Texture3D data.
+        // let (width,height,depth) = self.dimensions();
+        // let color_size           = self.format().color_format().size();
+        // let capacity             = width * height * depth * color_size;
+        // let mut data : Vec<T>    = Vec::with_capacity(capacity);
+        // let gl = &self.gl;
+        // unsafe {
+        //     data.set_len(capacity);
+        //
+        //     //FIXME: Pre-create a transfer framebuffer in Context.
+        //     let fb = gl.create_framebuffer().expect("Couldn't create Framebuffer");
+        //
+        //     for depth in 0..depth {
+        //         gl.bind_framebuffer(gl::FRAMEBUFFER, Some(fb));
+        //         gl.framebuffer_texture_layer(gl::FRAMEBUFFER,
+        //                                      gl::COLOR_ATTACHMENT0,
+        //                                      Some(self.resource()),
+        //                                      0,
+        //                                      depth as i32);
+        //
+        //         let (format, ty) = self.format().get_format_type();
+        //         let offset = width * height * depth * color_size;
+        //         let pixels = gl::PixelPackData::Slice(&mut as_u8_mut_slice(data.as_mut())[offset..]);
+        //         let (width, height, _) = self.dimensions();
+        //         gl::ReadPixels(0, 0, width as i32, height as i32, format, ty, pixels);
+        //     }
+        //
+        //     gl::BindFramebuffer(gl::FRAMEBUFFER, 0);
+        //     gl::DeleteFramebuffer(fb);
+        // }
+        // data
     }
 }

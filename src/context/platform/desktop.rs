@@ -62,12 +62,12 @@ impl HasContext for Context {
         }
 
         let gl = unsafe {
-            glow::Context::from_loader_function(|s| {
+            gl::load_with(|s| {
                 context.get_proc_address(s) as *const _
             })
         };
 
-        let gl = GLContext::from_glow_context(gl);
+        let gl = GLContext {};
         Self { events_loop, context, gl }
     }
 

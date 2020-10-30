@@ -1,30 +1,31 @@
-use crate::prelude::*;
 use crate::{Context, GLContext};
 use crate::TextureFormat;
 
-type TextureResource = <glow::Context as HasContext>::Texture;
+type TextureResource = u32;
 
 /// A `Texture` representation.
 pub struct Texture {
     pub(crate) gl      : GLContext,
     resource           : TextureResource,
     pub(crate) format  : TextureFormat,
-    typ                : u32
+    type_              : u32
 }
 
 impl Texture {
     /// Creates a new `Texture` with the specified `TextureFormat` and the internal OpenGL `typ`.
-    pub fn new(context:&Context, format:TextureFormat, typ:u32) -> Self {
+    pub fn new(context:&Context, format:TextureFormat, type_:u32) -> Self {
         let gl = context.gl_context();
         let resource = unsafe {
-            gl.create_texture().expect("Couldn't create texture")
+            let mut resource = 0;
+            gl::GenTextures(1, &mut resource);
+            resource
         };
-        Self { gl, resource, format, typ }
+        Self { gl, resource, format, type_ }
     }
 
     /// Gets the internal OpenGL type.
-    pub fn typ(&self) -> u32 {
-        self.typ
+    pub fn type_(&self) -> u32 {
+        self.type_
     }
 
     /// Gets the `TextureFormat`.
@@ -34,7 +35,7 @@ impl Texture {
 
     pub(crate) fn bind(&self) {
         unsafe {
-            self.gl.bind_texture(self.typ(), Some(self.resource()));
+            gl::BindTexture(self.type_(), self.resource());
         }
     }
 
@@ -47,7 +48,7 @@ impl Texture {
 impl Drop for Texture {
     fn drop(&mut self) {
         unsafe {
-            self.gl.delete_texture(self.resource());
+            gl::DeleteTextures(1, &self.resource());
         }
     }
 }

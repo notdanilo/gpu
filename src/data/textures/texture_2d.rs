@@ -1,11 +1,6 @@
 use crate::prelude::*;
 use crate::Context;
 
-use crate::data::as_u8_slice;
-use crate::data::as_u8_mut_slice;
-
-use glow::HasContext;
-
 use crate::TextureFormat;
 use crate::ColorFormat;
 use crate::Type;
@@ -25,7 +20,7 @@ pub struct Texture2D {
 impl Texture2D {
     fn new(context:&Context) -> Self {
         let format     = TextureFormat::new(ColorFormat::RGBA, Type::F32);
-        let texture    = Texture::new(context,format,glow::TEXTURE_2D);
+        let texture    = Texture::new(context, format, gl::TEXTURE_2D);
         let dimensions = (0,0);
         Self {texture,dimensions}
     }
@@ -61,9 +56,9 @@ impl Texture2D {
         self.format     = format.clone();
         self.bind();
         unsafe {
-            let tex_type        = self.typ();
+            let tex_type        = self.type_();
             let internal_format = format.internal_format();
-            self.gl.tex_storage_2d(tex_type, 1, internal_format, dimensions.0 as i32, dimensions.1 as i32);
+            gl::TexStorage2D(tex_type, 1, internal_format, dimensions.0 as i32, dimensions.1 as i32);
         }
     }
 
@@ -77,40 +72,41 @@ impl Texture2D {
             let internal_format = format.internal_format() as i32;
             let width           = dimensions.0 as i32;
             let height          = dimensions.1 as i32;
-            let pixels          = Some(as_u8_slice(data));
-            self.gl.tex_image_2d(self.typ(),0,internal_format,width,height,0,color,ty,pixels);
+            gl::TexImage2D(self.type_(),0,internal_format,width,height,0,color,ty,data.as_ptr() as *const std::ffi::c_void);
         }
     }
 
     /// Gets a copy of the data on the GPU.
     pub fn data<T>(&self) -> Vec<T> {
-        let (width,height)    = self.dimensions();
-        let capacity          = width * height * self.format().color_format().size();
-        let mut data : Vec<T> = Vec::with_capacity(capacity);
-        let gl = &self.gl;
-        unsafe {
-            data.set_len(capacity);
-
-            //FIXME: Pre-create a transfer framebuffer in Context.
-            let fb = gl.create_framebuffer().expect("Couldn't create Framebuffer");
-            gl.bind_framebuffer(glow::FRAMEBUFFER, Some(fb));
-            gl.framebuffer_texture_2d(glow::FRAMEBUFFER,
-                                      glow::COLOR_ATTACHMENT0,
-                                      glow::TEXTURE_2D,
-                                      Some(self.resource()),
-                                      0);
-
-            let (format, ty) = self.format().get_format_type();
-            let pixels       = glow::PixelPackData::Slice(as_u8_mut_slice(data.as_mut()));
-            let (width, height) = self.dimensions();
-            //FIXME: glow read_pixels uses &mut [u8], which can't read GL_FLOAT. To be able to read
-            // GL_FLOAT, it needs to use a ArrayBufferView from a Float32Array.
-            gl.read_pixels(0, 0, width as i32, height as i32, format, ty, pixels);
-
-
-            gl.bind_framebuffer(glow::FRAMEBUFFER, None);
-            gl.delete_framebuffer(fb);
-        }
-        data
+        Vec::new()
+        //FIXME: Read pixels.
+        // let (width,height)    = self.dimensions();
+        // let capacity          = width * height * self.format().color_format().size();
+        // let mut data : Vec<T> = Vec::with_capacity(capacity);
+        // let gl = &self.gl;
+        // unsafe {
+        //     data.set_len(capacity);
+        //
+        //     //FIXME: Pre-create a transfer framebuffer in Context.
+        //     let fb = gl.create_framebuffer().expect("Couldn't create Framebuffer");
+        //     gl.bind_framebuffer(glow::FRAMEBUFFER, Some(fb));
+        //     gl.framebuffer_texture_2d(glow::FRAMEBUFFER,
+        //                               glow::COLOR_ATTACHMENT0,
+        //                               glow::TEXTURE_2D,
+        //                               Some(self.resource()),
+        //                               0);
+        //
+        //     let (format, ty) = self.format().get_format_type();
+        //     let pixels       = glow::PixelPackData::Slice(as_u8_mut_slice(data.as_mut()));
+        //     let (width, height) = self.dimensions();
+        //     //FIXME: glow read_pixels uses &mut [u8], which can't read GL_FLOAT. To be able to read
+        //     // GL_FLOAT, it needs to use a ArrayBufferView from a Float32Array.
+        //     gl.read_pixels(0, 0, width as i32, height as i32, format, ty, pixels);
+        //
+        //
+        //     gl.bind_framebuffer(glow::FRAMEBUFFER, None);
+        //     gl.delete_framebuffer(fb);
+        // }
+        // data
     }
 }

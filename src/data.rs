@@ -1,12 +1,12 @@
 mod buffer;
 mod textures;
-mod vao;
+mod vertex_array_object;
 mod renderbuffer;
 mod framebuffer;
 
 pub use buffer::Buffer;
 pub use textures::*;
-pub use vao::VertexArrayObject;
+pub use vertex_array_object::VertexArrayObject;
 pub use renderbuffer::Renderbuffer;
 pub use framebuffer::Framebuffer;
 

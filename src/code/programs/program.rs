@@ -2,10 +2,9 @@
 //use crate::data::Texture;
 //use crate::data::Sampler;
 
-use crate::prelude::*;
 use crate::{Context, GLContext, Sampler, Texture2D};
 
-type ProgramResource = <glow::Context as HasContext>::Program;
+type ProgramResource = u32;
 
 /// A structure representing a GPU program.
 pub struct Program {
@@ -18,7 +17,7 @@ impl Program {
     pub fn new(context: &Context) -> Self {
         let gl = context.gl_context();
         let resource = unsafe {
-            gl.create_program().expect("Couldn't create program")
+            gl::CreateProgram()
         };
         Self { gl, resource}
     }
@@ -28,7 +27,7 @@ impl Program {
 
     pub fn uniform_mat4(&mut self, location: usize, transpose: bool, v: &[f32]) {
         unsafe {
-            self.gl.gl.uniform_matrix_4_f32_slice(Some(location as u32).as_ref(), transpose, v);
+            gl::UniformMatrix4fv(location as i32, 1, transpose as u8, v.as_ptr());
         }
     }
 
@@ -40,40 +39,39 @@ impl Program {
 //        }
 //    }
 
+    //FIXME: Rename to bind_sampler?
     /// Binds a `Texture2D` at `index` so it can be sampled with the specified `sampler`,
-    pub fn bind_texture_2d(&mut self, texture:&Texture2D, sampler:&Sampler, index:u32) {
+    pub fn bind_texture_2d(&mut self, texture:&Texture2D, sampler:&Sampler, index: usize) {
         unsafe {
-            self.gl.active_texture(glow::TEXTURE0 + index);
-            self.gl.bind_texture(glow::TEXTURE_2D, Some(texture.resource()));
-            self.gl.bind_sampler(index, Some(sampler.resource()));
-            self.gl.use_program(Some(self.resource()));
-            self.gl.uniform_1_i32(Some(&index), index as i32);
+            gl::ActiveTexture(gl::TEXTURE0 + index as u32);
+            gl::BindTexture(gl::TEXTURE_2D, texture.resource());
+            gl::BindSampler(index as u32, sampler.resource());
+            gl::UseProgram(self.resource());
+            gl::Uniform1i(index as i32, index as i32);
         }
     }
 
-    pub fn bind_vec2(&mut self, vec2:(f32, f32), index:u32) {
+    pub fn bind_vec2(&mut self, vec2:(f32, f32), index: usize) {
         unsafe {
-            self.gl.uniform_2_f32(Some(&index), vec2.0, vec2.1);
+            gl::Uniform2f(index as i32, vec2.0, vec2.1);
         }
     }
 
-    //TODO: Unify bind_texture_2d with bind_image.
-
-//    fn bind_image(&mut self, texture: &dyn Texture, index: u32) {
-//        unsafe {
-//            gl::UseProgram(self.get_id());
-//            gl::ActiveTexture(gl::TEXTURE0 + index);
-//            gl::BindTexture(texture.get_type(), texture.get_id());
-//            gl::BindImageTexture(index, texture.get_id(), 0, gl::FALSE, 0, gl::WRITE_ONLY, texture.get_format().get_internal_format());
-//            gl::Uniform1i(index as i32, index as i32);
-//        }
-//    }
+   pub fn bind_image_2d(&mut self, texture: &Texture2D, index: usize) {
+       unsafe {
+           gl::UseProgram(self.resource());
+           gl::ActiveTexture(gl::TEXTURE0 + index as u32);
+           gl::BindTexture(gl::TEXTURE_2D, texture.resource());
+           gl::BindImageTexture(index as u32, texture.resource(), 0, gl::FALSE, 0, gl::READ_WRITE , texture.format().internal_format());
+           gl::Uniform1i(index as i32, index as i32);
+       }
+   }
 }
 
 impl Drop for Program {
     fn drop(&mut self) {
         unsafe {
-            self.gl.delete_program(self.resource());
+            gl::DeleteProgram(self.resource());
         }
     }
 }

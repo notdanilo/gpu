@@ -1,10 +1,7 @@
-use crate::prelude::*;
 use crate::{Context, GLContext};
+use crate::data::as_u8_slice;
 
-type BufferResource = <glow::Context as HasContext>::Buffer;
-
-use super::as_u8_mut_slice;
-use super::as_u8_slice;
+type BufferResource = u32;
 
 /// A `Buffer` representation.
 pub struct Buffer {
@@ -16,7 +13,9 @@ impl Buffer {
     fn new(context:&Context) -> Self {
         let gl = context.gl_context();
         let resource = unsafe {
-            gl.create_buffer().expect("Couldn't create Buffer")
+            let mut resource = 0;
+            gl::CreateBuffers(1, &mut resource);
+            resource
         };
         Self { gl, resource }
     }
@@ -41,10 +40,8 @@ impl Buffer {
     }
 
     pub(crate) fn bind(&self) {
-        let resource = self.resource();
-        let resource = if resource == Default::default() { None } else { Some(resource) };
         unsafe {
-            self.gl.bind_buffer(glow::ARRAY_BUFFER, resource);
+            gl::BindBuffer(gl::ARRAY_BUFFER, self.resource());
         }
     }
 
@@ -52,7 +49,9 @@ impl Buffer {
     pub fn size(&self) -> usize {
         self.bind();
         unsafe {
-            self.gl.get_buffer_parameter_i32(glow::ARRAY_BUFFER, glow::BUFFER_SIZE) as usize
+            let mut params = 0;
+            gl::GetBufferParameteriv(gl::ARRAY_BUFFER, gl::BUFFER_SIZE, &mut params);
+            params as usize
         }
     }
 
@@ -61,7 +60,7 @@ impl Buffer {
         self.bind();
         unsafe {
             let slice = as_u8_slice(data);
-            self.gl.buffer_data_u8_slice(glow::ARRAY_BUFFER, slice, glow::STATIC_DRAW);
+            gl::BufferData(gl::ARRAY_BUFFER, slice.len() as isize, slice.as_ptr() as *const std::ffi::c_void, gl::STATIC_DRAW);
         }
     }
 
@@ -74,8 +73,7 @@ impl Buffer {
         unsafe {
             data.set_len(capacity);
             let offset = 0;
-            let data   = as_u8_mut_slice(data.as_mut());
-            self.gl.get_buffer_sub_data(glow::ARRAY_BUFFER, offset, data);
+            gl::BufferSubData(gl::ARRAY_BUFFER, offset, size as isize, data.as_ptr() as *const std::ffi::c_void);
         }
         data
     }
@@ -84,7 +82,7 @@ impl Buffer {
     pub fn reallocate(&mut self, size: usize) {
         self.bind();
         unsafe {
-            self.gl.buffer_data_size(glow::ARRAY_BUFFER, size as i32, glow::STATIC_DRAW);
+            gl::BufferData(gl::ARRAY_BUFFER, size as isize, std::ptr::null(), gl::STATIC_DRAW);
         }
     }
 }
@@ -92,7 +90,7 @@ impl Buffer {
 impl Drop for Buffer {
     fn drop(&mut self) {
         unsafe {
-            self.gl.delete_buffer(self.resource());
+            gl::DeleteBuffers(1, &self.resource());
         }
     }
 }

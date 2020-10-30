@@ -1,10 +1,9 @@
-use crate::prelude::*;
 use crate::data::Texture2D;
 use crate::data::Renderbuffer;
 use crate::{Context, GLContext};
 
 
-type FramebufferResource = <glow::Context as HasContext>::Framebuffer;
+type FramebufferResource = u32;
 
 enum FramebufferAttachment {
     Texture(Texture2D),
@@ -46,23 +45,19 @@ impl Framebuffer {
     }
 
     pub(crate) fn bind(&self) {
-        let gl       = &self.gl;
         let resource = self.resource();
-        let resource = if resource == Default::default() { None } else { Some(resource) };
         unsafe {
-            gl.bind_framebuffer(glow::FRAMEBUFFER, resource);
+            gl::BindFramebuffer(gl::FRAMEBUFFER, resource);
         }
     }
 
     /// Creates a new `Framebuffer` with optional `color`, `depth` and `stencil`.
-    pub fn new
-    (context:&Context, color: Option<Texture2D>,
-     depth:Option<Texture2D>, stencil:Option<Texture2D>) -> Result<Self,
-        String> {
-        let gl       = context.gl_context();
+    pub fn new(context:&Context, color: Option<Texture2D>, depth:Option<Texture2D>, stencil:Option<Texture2D>) -> Result<Self, String> {
+        let gl = context.gl_context();
         let resource = unsafe {
-            let resource = gl.create_framebuffer().expect("Couldn't create Framebuffer");
-            gl.bind_framebuffer(glow::FRAMEBUFFER, Some(resource));
+            let mut resource = 0;
+            gl::CreateFramebuffers(1, &mut resource);
+            gl::BindFramebuffer(gl::FRAMEBUFFER, resource);
             resource
         };
         let mut dimensions = (0, 0);
@@ -71,8 +66,8 @@ impl Framebuffer {
             Some(texture) => {
                 dimensions = texture.dimensions();
                 unsafe {
-                    gl.framebuffer_texture_2d(glow::FRAMEBUFFER, glow::COLOR_ATTACHMENT0,
-                                              glow::TEXTURE_2D, Some(texture.resource()), 0);
+                    gl::FramebufferTexture2D(gl::FRAMEBUFFER, gl::COLOR_ATTACHMENT0,
+                                             gl::TEXTURE_2D, texture.resource(), 0);
                 }
                 FramebufferAttachment::Texture(texture)
             },
@@ -105,7 +100,7 @@ impl Framebuffer {
 impl Drop for Framebuffer {
     fn drop(&mut self) {
         unsafe {
-            self.gl.delete_framebuffer(self.resource());
+            gl::DeleteFramebuffers(1, &self.resource());
         }
     }
 }

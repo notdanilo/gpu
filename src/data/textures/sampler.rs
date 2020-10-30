@@ -1,9 +1,8 @@
 //FIXME: Create Wrap struct and Filter struct.
 
-use crate::prelude::*;
 use crate::{Context, GLContext};
 
-type SamplerResource = <glow::Context as HasContext>::Sampler;
+type SamplerResource = u32;
 
 /// A `Sampler` is responsible for sampling values from a texture. It supports filtering and coordinates wrapping.
 pub struct Sampler {
@@ -16,11 +15,12 @@ impl Sampler {
     pub fn new(context:&Context) -> Self {
         let gl = context.gl_context();
         let resource = unsafe {
-            let resource = gl.create_sampler().expect("Couldn't create sampler");
-            gl.sampler_parameter_i32(resource, glow::TEXTURE_WRAP_S, glow::REPEAT as i32);
-            gl.sampler_parameter_i32(resource, glow::TEXTURE_WRAP_T, glow::REPEAT as i32);
-            gl.sampler_parameter_i32(resource, glow::TEXTURE_MIN_FILTER, glow::NEAREST as i32);
-            gl.sampler_parameter_i32(resource, glow::TEXTURE_MAG_FILTER, glow::NEAREST as i32);
+            let mut resource = 0;
+            gl::CreateSamplers(1, &mut resource);
+            gl::SamplerParameteri(resource, gl::TEXTURE_WRAP_S, gl::REPEAT as i32);
+            gl::SamplerParameteri(resource, gl::TEXTURE_WRAP_T, gl::REPEAT as i32);
+            gl::SamplerParameteri(resource, gl::TEXTURE_MIN_FILTER, gl::NEAREST as i32);
+            gl::SamplerParameteri(resource, gl::TEXTURE_MAG_FILTER, gl::NEAREST as i32);
             resource
         };
         Self { gl, resource }
@@ -35,7 +35,7 @@ impl Sampler {
 impl Drop for Sampler {
     fn drop(&mut self) {
         unsafe {
-            self.gl.delete_sampler(self.resource());
+            gl::DeleteSamplers(1, &self.resource());
         }
     }
 }

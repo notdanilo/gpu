@@ -1,4 +1,3 @@
-use crate::prelude::*;
 use crate::{Context, Framebuffer, GLContext};
 
 
@@ -17,11 +16,11 @@ pub struct ClearProgram {
 
 impl ClearProgram {
     /// Color buffer bit.
-    pub const COLOR   : u32 = glow::COLOR_BUFFER_BIT;
+    pub const COLOR   : u32 = gl::COLOR_BUFFER_BIT;
     /// Depth buffer bit.
-    pub const DEPTH   : u32 = glow::DEPTH_BUFFER_BIT;
+    pub const DEPTH   : u32 = gl::DEPTH_BUFFER_BIT;
     /// Stencil buffer bit.
-    pub const STENCIL : u32 = glow::STENCIL_BUFFER_BIT;
+    pub const STENCIL : u32 = gl::STENCIL_BUFFER_BIT;
 
     /// Creates a new `ClearProgram`.
     pub fn new(context:&Context) -> Self {
@@ -53,13 +52,12 @@ impl ClearProgram {
     /// clear(framebuffer, ClearProgram::COLOR | ClearProgram::DEPTH | ClearProgram::STENCIL)
     /// ```
     pub fn clear(&self, framebuffer:&mut Framebuffer, clear_mask: u32) {
-        let gl = &self.gl;
         unsafe {
             framebuffer.bind();
-            gl.clear_color(self.color.0, self.color.1, self.color.2, self.color.3);
-            gl.clear_depth_f32(self.depth);
-            gl.clear_stencil(self.stencil);
-            gl.clear(clear_mask);
+            gl::ClearColor(self.color.0, self.color.1, self.color.2, self.color.3);
+            gl::ClearDepthf(self.depth);
+            gl::ClearStencil(self.stencil);
+            gl::Clear(clear_mask);
         }
     }
 }
