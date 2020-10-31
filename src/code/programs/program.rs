@@ -25,12 +25,6 @@ impl Program {
     /// Gets the `ProgramResource` object.
     pub fn resource(&self) -> ProgramResource { self.resource }
 
-    pub fn uniform_mat4(&mut self, location: usize, transpose: bool, v: &[f32]) {
-        unsafe {
-            gl::UniformMatrix4fv(location as i32, 1, transpose as u8, v.as_ptr());
-        }
-    }
-
 // FIXME: These parts were removed because glow uses a minimum set of GL x GLES x WEBGL.
 // These functions can be included in a trait which can be implemented for backends that supports it.
 //    fn bind_buffer(&mut self, buffer: &Buffer, index: u32) {
@@ -39,9 +33,9 @@ impl Program {
 //        }
 //    }
 
-    //FIXME: Rename to bind_sampler?
+    //FIXME: Rename to bind_sampler? Sampler could hold the Texture reference in its structure.
     /// Binds a `Texture2D` at `index` so it can be sampled with the specified `sampler`,
-    pub fn bind_texture_2d(&mut self, texture:&Texture2D, sampler:&Sampler, index: usize) {
+    pub fn bind_texture_2d(&self, texture:&Texture2D, sampler:&Sampler, index: usize) {
         unsafe {
             gl::ActiveTexture(gl::TEXTURE0 + index as u32);
             gl::BindTexture(gl::TEXTURE_2D, texture.resource());
@@ -51,13 +45,62 @@ impl Program {
         }
     }
 
-    pub fn bind_vec2(&mut self, vec2:(f32, f32), index: usize) {
+    pub fn bind_f32(&self, value: f32, index: usize) {
         unsafe {
-            gl::Uniform2f(index as i32, vec2.0, vec2.1);
+            gl::Uniform1f(index as i32, value);
         }
     }
 
-   pub fn bind_image_2d(&mut self, texture: &Texture2D, index: usize) {
+    pub fn bind_vec2(&self, value:(f32, f32), index: usize) {
+        unsafe {
+            gl::Uniform2f(index as i32, value.0, value.1);
+        }
+    }
+
+    pub fn bind_vec3(&self, value: (f32, f32, f32), index: usize) {
+        unsafe {
+            gl::Uniform3f(index as i32, value.0, value.1, value.2);
+        }
+    }
+
+    pub fn bind_vec4(&self, value: (f32, f32, f32, f32), index: usize) {
+        unsafe {
+            gl::Uniform4f(index as i32, value.0, value.1, value.2, value.3);
+        }
+    }
+
+    pub fn uniform_mat4(&mut self, location: usize, transpose: bool, v: &[f32]) {
+        unsafe {
+            gl::UniformMatrix4fv(location as i32, 1, transpose as u8, v.as_ptr());
+        }
+    }
+
+    pub fn bind_i32(&self, value: i32, index: usize) {
+        unsafe {
+            gl::Uniform1i(index as i32, value);
+        }
+    }
+
+    //FIXME: Make all bind functions not mutable.
+    pub fn bind_ivec2(&self, value: (i32, i32), index: usize) {
+        unsafe {
+            gl::Uniform2i(index as i32, value.0, value.1);
+        }
+    }
+
+    pub fn bind_ivec3(&self, value: (i32, i32, i32), index: usize) {
+        unsafe {
+            gl::Uniform3i(index as i32, value.0, value.1, value.2);
+        }
+    }
+
+    pub fn bind_ivec4(&self, ivec4: (i32, i32, i32, i32), index: usize) {
+        unsafe {
+            gl::Uniform4i(index as i32, ivec4.0, ivec4.1, ivec4.2, ivec4.3);
+        }
+    }
+
+    pub fn bind_image_2d(&self, texture: &Texture2D, index: usize) {
        unsafe {
            gl::UseProgram(self.resource());
            gl::ActiveTexture(gl::TEXTURE0 + index as u32);
@@ -65,7 +108,7 @@ impl Program {
            gl::BindImageTexture(index as u32, texture.resource(), 0, gl::FALSE, 0, gl::READ_WRITE , texture.format().internal_format());
            gl::Uniform1i(index as i32, index as i32);
        }
-   }
+    }
 }
 
 impl Drop for Program {
