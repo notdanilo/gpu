@@ -1,7 +1,7 @@
 //! GLContext backend.
 
 /// A `GLContext` structure.
-#[derive(Clone)]
+#[derive(Clone,Copy)]
 pub struct GLContext {
 }
 

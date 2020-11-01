@@ -7,6 +7,7 @@ use crate::{Context, GLContext, Sampler, Texture2D};
 type ProgramResource = u32;
 
 /// A structure representing a GPU program.
+#[derive(Clone)]
 pub struct Program {
     pub(crate) gl : GLContext,
     resource      : ProgramResource
@@ -45,6 +46,30 @@ impl Program {
         }
     }
 
+    pub fn bind_bool(&self, value: bool, index: usize) {
+        unsafe {
+            gl::Uniform1i(index as i32, value as i32);
+        }
+    }
+
+    pub fn bind_bvec2(&self, value: (bool, bool), index: usize) {
+        unsafe {
+            gl::Uniform2i(index as i32, value.0 as i32, value.1 as i32);
+        }
+    }
+
+    pub fn bind_bvec3(&self, value: (bool, bool, bool), index: usize) {
+        unsafe {
+            gl::Uniform3i(index as i32, value.0 as i32, value.1 as i32, value.2 as i32);
+        }
+    }
+
+    pub fn bind_bvec4(&self, value: (bool, bool, bool, bool), index: usize) {
+        unsafe {
+            gl::Uniform4i(index as i32, value.0 as i32, value.1 as i32, value.2 as i32, value.3 as i32);
+        }
+    }
+
     pub fn bind_f32(&self, value: f32, index: usize) {
         unsafe {
             gl::Uniform1f(index as i32, value);
@@ -69,6 +94,7 @@ impl Program {
         }
     }
 
+    // This function is not safe. v needs to have 4 * 4 = 16 f32s.
     pub fn uniform_mat4(&mut self, location: usize, transpose: bool, v: &[f32]) {
         unsafe {
             gl::UniformMatrix4fv(location as i32, 1, transpose as u8, v.as_ptr());

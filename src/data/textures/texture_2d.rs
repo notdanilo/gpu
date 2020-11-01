@@ -32,9 +32,9 @@ impl Texture2D {
 
     /// Allocates a new `Texture2D` with the specified dimensions and `TextureFormat`.
     pub fn allocate
-    (context:&Context, dimension:(usize,usize), format:&TextureFormat) -> Self {
+    (context:&Context, dimensions:(usize, usize), format:&TextureFormat) -> Self {
         let mut texture = Self::new(context);
-        texture.reallocate(dimension, &format);
+        texture.reallocate(dimensions, &format);
         texture
     }
 
