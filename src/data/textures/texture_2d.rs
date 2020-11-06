@@ -78,14 +78,19 @@ impl Texture2D {
 
     /// Gets a copy of the data on the GPU.
     pub fn data<T>(&self) -> Vec<T> {
-        Vec::new()
-        //FIXME: Read pixels.
-        // let (width,height)    = self.dimensions();
-        // let capacity          = width * height * self.format().color_format().size();
-        // let mut data : Vec<T> = Vec::with_capacity(capacity);
-        // let gl = &self.gl;
-        // unsafe {
-        //     data.set_len(capacity);
+        let (width,height)    = self.dimensions();
+        let capacity          = width * height * self.format().color_format().size();
+        let mut data : Vec<T> = Vec::with_capacity(capacity);
+        unsafe {
+            data.set_len(capacity);
+            let (format, type_) = self.texture.format().get_format_type();
+
+            gl::ActiveTexture(gl::TEXTURE0);
+            gl::BindTexture(gl::TEXTURE_2D, self.resource());
+            gl::GetTexImage(gl::TEXTURE_2D, 0, format, type_, data.as_mut_ptr() as *mut std::ffi::c_void);
+        }
+
+        data
         //
         //     //FIXME: Pre-create a transfer framebuffer in Context.
         //     let fb = gl.create_framebuffer().expect("Couldn't create Framebuffer");
