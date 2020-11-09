@@ -1,7 +1,7 @@
 // ref https://www.khronos.org/registry/OpenGL-Refpages/es3.0/html/glTexImage2D.xhtml
 
 /// Kinds of `ColorFormat`s.
-#[derive(Clone)]
+#[derive(Clone,Copy)]
 pub enum ColorFormat {
     /// Red only `ColorFormat`.
     R,

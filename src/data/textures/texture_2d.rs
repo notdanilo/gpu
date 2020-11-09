@@ -41,12 +41,12 @@ impl Texture2D {
     /// Creates a new `Texture2D` from a slice.
     pub fn from_data<T>
     ( context:&Context
-    , dimension:(usize,usize)
+    , dimensions:(usize,usize)
     , format:&TextureFormat
     , data: &[T]
     , data_format:&TextureFormat) -> Self {
-        let mut texture = Self::new(context);
-        texture.set_data(dimension, &format, data, &data_format);
+        let mut texture = Self::allocate(context, dimensions, format);
+        texture.set_data(dimensions, &format, data, &data_format);
         texture
     }
 
@@ -66,13 +66,11 @@ impl Texture2D {
     pub fn set_data<T>(&mut self, dimensions: (usize, usize), format: &TextureFormat, data: &[T], data_format: &TextureFormat) {
         self.dimensions = dimensions;
         self.format     = format.clone();
-        self.bind();
         unsafe {
             let (color, ty)     = data_format.get_format_type();
-            let internal_format = format.internal_format() as i32;
             let width           = dimensions.0 as i32;
             let height          = dimensions.1 as i32;
-            gl::TexImage2D(self.type_(),0,internal_format,width,height,0,color,ty,data.as_ptr() as *const std::ffi::c_void);
+            gl::TextureSubImage2D(self.resource(),0,0,0,width,height,color,ty,data.as_ptr() as *const std::ffi::c_void);
         }
     }
 
@@ -87,6 +85,7 @@ impl Texture2D {
 
             gl::ActiveTexture(gl::TEXTURE0);
             gl::BindTexture(gl::TEXTURE_2D, self.resource());
+            // TODO: Use glGetTextureSubImage here.
             gl::GetTexImage(gl::TEXTURE_2D, 0, format, type_, data.as_mut_ptr() as *mut std::ffi::c_void);
         }
         data

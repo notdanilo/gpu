@@ -1,7 +1,7 @@
 // ref https://www.khronos.org/registry/OpenGL-Refpages/es3.0/html/glTexImage2D.xhtml
 
 /// Types used by the GPU.
-#[derive(Clone)]
+#[derive(Clone,Copy)]
 pub enum Type {
     /// 8bits unsigned integer.
     U8,

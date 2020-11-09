@@ -3,7 +3,7 @@ use crate::ColorFormat;
 
 // ref https://www.khronos.org/registry/OpenGL-Refpages/es3.0/html/glTexImage2D.xhtml
 /// Texture format representation with color format and component format.
-#[derive(Clone)]
+#[derive(Clone,Copy)]
 pub struct TextureFormat(pub ColorFormat, pub Type);
 
 impl TextureFormat {
@@ -23,6 +23,10 @@ impl TextureFormat {
     /// Gets the internal OpenGL format.
     pub fn internal_format(&self) -> u32 {
         let (color, component) = (&self.0, &self.1);
+        // FIXME: Rewrite as:
+        //         match (color, component) {
+        //             (ColorFormat::RGBA, Type::U8) => gl::RGBA8,
+        //             ...
         match color {
             ColorFormat::RGBA => match component {
                 Type::U8  => gl::RGBA8,
