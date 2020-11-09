@@ -73,7 +73,7 @@ impl Buffer {
         unsafe {
             data.set_len(capacity);
             let offset = 0;
-            gl::BufferSubData(gl::ARRAY_BUFFER, offset, size as isize, data.as_ptr() as *const std::ffi::c_void);
+            gl::GetBufferSubData(gl::ARRAY_BUFFER, offset, size as isize, data.as_ptr() as *mut std::ffi::c_void);
         }
         data
     }

@@ -80,37 +80,18 @@ impl Texture3D {
 
     /// Gets a copy of the data on the GPU.
     pub fn data<T>(&self) -> Vec<T> {
-        Vec::new()
-        // FIXME: Read Texture3D data.
-        // let (width,height,depth) = self.dimensions();
-        // let color_size           = self.format().color_format().size();
-        // let capacity             = width * height * depth * color_size;
-        // let mut data : Vec<T>    = Vec::with_capacity(capacity);
-        // let gl = &self.gl;
-        // unsafe {
-        //     data.set_len(capacity);
-        //
-        //     //FIXME: Pre-create a transfer framebuffer in Context.
-        //     let fb = gl.create_framebuffer().expect("Couldn't create Framebuffer");
-        //
-        //     for depth in 0..depth {
-        //         gl.bind_framebuffer(gl::FRAMEBUFFER, Some(fb));
-        //         gl.framebuffer_texture_layer(gl::FRAMEBUFFER,
-        //                                      gl::COLOR_ATTACHMENT0,
-        //                                      Some(self.resource()),
-        //                                      0,
-        //                                      depth as i32);
-        //
-        //         let (format, ty) = self.format().get_format_type();
-        //         let offset = width * height * depth * color_size;
-        //         let pixels = gl::PixelPackData::Slice(&mut as_u8_mut_slice(data.as_mut())[offset..]);
-        //         let (width, height, _) = self.dimensions();
-        //         gl::ReadPixels(0, 0, width as i32, height as i32, format, ty, pixels);
-        //     }
-        //
-        //     gl::BindFramebuffer(gl::FRAMEBUFFER, 0);
-        //     gl::DeleteFramebuffer(fb);
-        // }
-        // data
+        let (width,height,depth) = self.dimensions();
+        let color_size           = self.format().color_format().size();
+        let capacity             = width * height * depth * color_size;
+        let mut data : Vec<T>    = Vec::with_capacity(capacity);
+        unsafe {
+            data.set_len(capacity);
+            let (format, type_) = self.texture.format().get_format_type();
+
+            gl::ActiveTexture(gl::TEXTURE0);
+            gl::BindTexture(gl::TEXTURE_3D, self.resource());
+            gl::GetTexImage(gl::TEXTURE_3D, 0, format, type_, data.as_mut_ptr() as *mut std::ffi::c_void);
+        }
+        data
     }
 }

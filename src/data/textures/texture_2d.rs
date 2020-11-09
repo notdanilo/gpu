@@ -89,29 +89,6 @@ impl Texture2D {
             gl::BindTexture(gl::TEXTURE_2D, self.resource());
             gl::GetTexImage(gl::TEXTURE_2D, 0, format, type_, data.as_mut_ptr() as *mut std::ffi::c_void);
         }
-
         data
-        //
-        //     //FIXME: Pre-create a transfer framebuffer in Context.
-        //     let fb = gl.create_framebuffer().expect("Couldn't create Framebuffer");
-        //     gl.bind_framebuffer(glow::FRAMEBUFFER, Some(fb));
-        //     gl.framebuffer_texture_2d(glow::FRAMEBUFFER,
-        //                               glow::COLOR_ATTACHMENT0,
-        //                               glow::TEXTURE_2D,
-        //                               Some(self.resource()),
-        //                               0);
-        //
-        //     let (format, ty) = self.format().get_format_type();
-        //     let pixels       = glow::PixelPackData::Slice(as_u8_mut_slice(data.as_mut()));
-        //     let (width, height) = self.dimensions();
-        //     //FIXME: glow read_pixels uses &mut [u8], which can't read GL_FLOAT. To be able to read
-        //     // GL_FLOAT, it needs to use a ArrayBufferView from a Float32Array.
-        //     gl.read_pixels(0, 0, width as i32, height as i32, format, ty, pixels);
-        //
-        //
-        //     gl.bind_framebuffer(glow::FRAMEBUFFER, None);
-        //     gl.delete_framebuffer(fb);
-        // }
-        // data
     }
 }
