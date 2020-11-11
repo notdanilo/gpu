@@ -21,7 +21,11 @@ pub enum RasterGeometry {
     /// Raster three consecutive vertices as a triangle.
     Triangles = gl::TRIANGLES as isize,
     /// Raster each vertex as a point.
-    Points    = gl::POINTS as isize
+    Points    = gl::POINTS as isize,
+    /// Raster two consecutive vertices as a line.
+    Lines     = gl::LINES as isize,
+    /// Raster the vertices as a sequence of lines.
+    LineStrip = gl::LINE_STRIP as isize
 }
 
 impl RasterProgram {
@@ -56,7 +60,7 @@ impl RasterProgram {
     }
 
     /// Draws the `n_vertices` in a `VertexArrayObject` as the specified `RasterGeometry` on the target `Framebuffer`.
-    pub fn raster(&self, framebuffer: &Framebuffer, vertex_array_object: &VertexArrayObject, raster_geometry: RasterGeometry, n_vertices: u32) {
+    pub fn raster(&self, framebuffer: &Framebuffer, vertex_array_object: &VertexArrayObject, raster_geometry: RasterGeometry, n_vertices: usize) {
         unsafe {
             framebuffer.bind();
             self.use_();

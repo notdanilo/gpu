@@ -7,7 +7,7 @@ type VertexArrayObjectResource = u32;
 pub struct VertexArrayObject {
     gl       : GLContext,
     resource : VertexArrayObjectResource,
-    vertices : u32
+    vertices : usize
 }
 
 impl VertexArrayObject {
@@ -44,12 +44,12 @@ impl VertexArrayObject {
     }
 
     /// Sets the number of vertices.
-    pub fn set_vertices(&mut self, vertices : u32) {
+    pub fn set_vertices(&mut self, vertices : usize) {
         self.vertices = vertices;
     }
 
     /// Gets the number of vertices.
-    pub fn get_vertices(&self) -> u32 {
+    pub fn get_vertices(&self) -> usize {
         self.vertices
     }
 
