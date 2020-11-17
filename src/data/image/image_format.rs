@@ -2,26 +2,26 @@ use crate::Type;
 use crate::ColorFormat;
 
 // ref https://www.khronos.org/registry/OpenGL-Refpages/es3.0/html/glTexImage2D.xhtml
-/// Texture format representation with color format and component format.
+/// Image format representation with color format and component format.
 #[derive(Clone,Copy)]
-pub struct TextureFormat(pub ColorFormat, pub Type);
+pub struct ImageFormat(pub ColorFormat, pub Type);
 
-impl TextureFormat {
-    /// Creates a new `TextureFormat`.
+impl ImageFormat {
+    /// Creates a new `ImageFormat`.
     pub fn new(color: ColorFormat, component: Type) -> Self {
-        TextureFormat(color, component)
+        ImageFormat(color, component)
     }
 
     /// Gets the `ColorFormat`.
     pub fn color_format(&self) -> &ColorFormat { &self.0 }
 
-    /// Gets the `ComponentFormat`.
-    pub fn component_format(&self) -> &Type { &self.1 }
+    /// Gets the component's `Type`.
+    pub fn component_type(&self) -> &Type { &self.1 }
 }
 
-impl TextureFormat {
+impl ImageFormat {
     /// Gets the internal OpenGL format.
-    pub fn internal_format(&self) -> u32 {
+    pub(crate) fn internal_format(&self) -> u32 {
         let (color, component) = (&self.0, &self.1);
         // FIXME: Rewrite as:
         //         match (color, component) {
@@ -72,7 +72,7 @@ impl TextureFormat {
     }
 
     /// Gets format and type.
-    pub fn get_format_type(&self) -> (u32, u32) {
+    pub(crate) fn get_format_and_type(&self) -> (u32, u32) {
         let format = self.0.get_format();
         let ty = self.1.format();
         (format, ty)

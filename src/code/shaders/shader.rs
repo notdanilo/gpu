@@ -5,7 +5,7 @@ type ShaderResource = u32;
 /// A shader representation.
 pub struct Shader {
     resource : ShaderResource,
-    gl       : GLContext
+    _gl: GLContext
 }
 
 impl Shader {
@@ -28,7 +28,7 @@ impl Shader {
                 return Err(err)
             }
         }
-        Ok(Self {resource,gl})
+        Ok(Self {resource, _gl: gl })
     }
 
     /// Gets the `ShaderResource`.

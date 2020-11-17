@@ -5,7 +5,7 @@ type BufferResource = u32;
 
 /// A `Buffer` representation.
 pub struct Buffer {
-    gl       : GLContext,
+    _gl: GLContext,
     resource : BufferResource
 }
 
@@ -17,7 +17,7 @@ impl Buffer {
             gl::CreateBuffers(1, &mut resource);
             resource
         };
-        Self { gl, resource }
+        Self { _gl: gl, resource }
     }
 
     /// Gets the `BufferResource`.

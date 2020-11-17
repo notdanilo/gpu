@@ -101,8 +101,8 @@ impl ComputeProgram {
 //     }
 //
 //     #[test]
-//     fn write_to_texture2d() {
-//         use crate::{Texture2D, TextureFormat, ColorFormat, ComponentFormat};
+//     fn write_to_image2d() {
+//         use crate::{Image2D, TextureFormat, ColorFormat, ComponentFormat};
 //
 //         let context_builder = ContextBuilder::new().with_display(ContextDisplay::None);
 //         let mut context = context_builder.build();
@@ -127,7 +127,7 @@ impl ComputeProgram {
 //         let dimension = (16, 16);
 //         let format = TextureFormat(ColorFormat::R, ComponentFormat::F32);
 //
-//         let texture = Texture2D::allocate(dimension, &format);
+//         let texture = Image2D::allocate(dimension, &format);
 //         assert_eq!(texture.get_dimension(), dimension);
 //         program.bind_image(&texture, 0);
 //
@@ -144,8 +144,8 @@ impl ComputeProgram {
 //     }
 //
 //     #[test]
-//     fn write_to_texture3d() {
-//         use crate::Texture3D;
+//     fn write_to_image2d() {
+//         use crate::Image2D;
 //         use crate::TextureFormat;
 //         use crate::ColorFormat;
 //         use crate::ComponentFormat;
@@ -177,7 +177,7 @@ impl ComputeProgram {
 //         let dimension = (2, 2, 2);
 //         let format = TextureFormat(ColorFormat::RGBA, ComponentFormat::F32);
 //
-//         let texture = Texture3D::allocate(dimension, &format);
+//         let texture = Image2D::allocate(dimension, &format);
 //         assert_eq!(texture.get_dimension(), dimension);
 //         program.bind_image(&texture, 0);
 //

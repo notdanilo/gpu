@@ -4,7 +4,7 @@ type RenderbufferResource = u32;
 
 /// Renderbuffer representation.
 pub struct Renderbuffer {
-    gl       : GLContext,
+    _gl: GLContext,
     resource : RenderbufferResource
 }
 
@@ -13,7 +13,7 @@ impl Renderbuffer {
     pub fn default(context:&Context) -> Self {
         let resource = Default::default();
         let gl       = context.gl_context();
-        Self { resource, gl }
+        Self { resource, _gl: gl }
     }
 
     /// Creates a new `Renderbuffer` with `(width, height)` dimensions.
@@ -28,7 +28,7 @@ impl Renderbuffer {
             gl::RenderbufferStorage(gl::RENDERBUFFER, gl::DEPTH_COMPONENT, width, height);
             resource
         };
-        Self { gl, resource }
+        Self { _gl: gl, resource }
     }
 
     /// Gets the `RenderbufferResource`.

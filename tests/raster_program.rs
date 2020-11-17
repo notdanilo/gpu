@@ -91,8 +91,8 @@ mod clear_program {
     }
 
     #[test]
-    fn draw_to_texture2d() {
-        use gpu::{Texture2D, ColorFormat, TextureFormat, Type, Buffer};
+    fn draw_to_image2d() {
+        use gpu::{Image2D, ColorFormat, ImageFormat, Type, Buffer};
 
         let context_builder = ContextBuilder::new().with_display(ContextDisplay::None);
         let context = context_builder.build();
@@ -120,9 +120,9 @@ mod clear_program {
             .unwrap();
 
         let components = 4;
-        let format = TextureFormat::new(ColorFormat::components(components), Type::F32);
+        let format = ImageFormat::new(ColorFormat::components(components), Type::F32);
         let dimension = (8, 8);
-        let color = Texture2D::allocate(&context, dimension, &format);
+        let color = Image2D::allocate(&context, dimension, &format);
         let framebuffer = Framebuffer::new(&context, Some(color), None, None).unwrap();
 
         let mut expected_data : Vec<f32> = Vec::new();

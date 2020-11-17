@@ -1,4 +1,4 @@
-use crate::data::Texture2D;
+use crate::data::Image2D;
 use crate::data::Renderbuffer;
 use crate::{Context, GLContext};
 
@@ -6,14 +6,14 @@ use crate::{Context, GLContext};
 type FramebufferResource = u32;
 
 enum FramebufferAttachment {
-    Texture(Texture2D),
+    Image(Image2D),
     Renderbuffer(Renderbuffer),
     None
 }
 
 /// A Framebuffer representation with optional `color`, `depth` and `stencil` attachments.
 pub struct Framebuffer {
-    gl         : GLContext,
+    _gl: GLContext,
     resource   : FramebufferResource,
     dimensions : (usize, usize),
     color      : FramebufferAttachment,
@@ -23,7 +23,7 @@ pub struct Framebuffer {
 
 //FIXME: Incomplete implementation
 // 1. Lacks default renderbuffers for depth and stencil testing
-// 2. Lacks depth and stencil implementation for textures
+// 2. Lacks depth and stencil implementation for image
 // 3. Lacks framebuffer completeness test
 // 4. Lacks checking for returning Result::Err
 // 5. Check attachment dimensions (does framebuffer completeness check takes that into account?)
@@ -37,7 +37,7 @@ impl Framebuffer {
         let _depth     = FramebufferAttachment::Renderbuffer(Renderbuffer::default(context));
         let _stencil   = FramebufferAttachment::Renderbuffer(Renderbuffer::default(context));
         let gl         = context.gl_context();
-        Self { gl, resource, dimensions, color, _depth, _stencil }
+        Self { _gl: gl, resource, dimensions, color, _depth, _stencil }
     }
 
     pub(crate) fn resource(&self) -> FramebufferResource {
@@ -52,7 +52,7 @@ impl Framebuffer {
     }
 
     /// Creates a new `Framebuffer` with optional `color`, `depth` and `stencil`.
-    pub fn new(context:&Context, color: Option<Texture2D>, depth:Option<Texture2D>, stencil:Option<Texture2D>) -> Result<Self, String> {
+    pub fn new(context:&Context, color: Option<Image2D>, depth:Option<Image2D>, stencil:Option<Image2D>) -> Result<Self, String> {
         let gl = context.gl_context();
         let resource = unsafe {
             let mut resource = 0;
@@ -63,35 +63,35 @@ impl Framebuffer {
         let mut dimensions = (0, 0);
 
         let color = match color {
-            Some(texture) => {
-                dimensions = texture.dimensions();
+            Some(image) => {
+                dimensions = image.dimensions();
                 unsafe {
                     gl::FramebufferTexture2D(gl::FRAMEBUFFER, gl::COLOR_ATTACHMENT0,
-                                             gl::TEXTURE_2D, texture.resource(), 0);
+                                             gl::TEXTURE_2D, image.internal(), 0);
                 }
-                FramebufferAttachment::Texture(texture)
-            },
+                FramebufferAttachment::Image(image)
+            }
             None => FramebufferAttachment::None
         };
         let _depth = match depth {
-            Some(texture) => FramebufferAttachment::Texture(texture),
+            Some(texture) => FramebufferAttachment::Image(texture),
             None => FramebufferAttachment::None
         };
         let _stencil = match stencil {
-            Some(texture) => FramebufferAttachment::Texture(texture),
+            Some(texture) => FramebufferAttachment::Image(texture),
             None => FramebufferAttachment::None
         };
 
-        Ok(Self {gl, resource, dimensions, color, _depth, _stencil})
+        Ok(Self { _gl: gl, resource, dimensions, color, _depth, _stencil})
     }
 
     /// Gets the `Framebuffer`'s dimension.
     pub fn dimensions(&self) -> (usize, usize) { self.dimensions }
 
-    /// Returns the `Texture2D` used as the `ColorBuffer` if any.
-    pub fn color(&self) -> Option<&Texture2D> {
+    /// Returns the `Image2D` used as the `ColorBuffer` if any.
+    pub fn color(&self) -> Option<&Image2D> {
         match &self.color {
-            FramebufferAttachment::Texture(texture) => Some(&texture),
+            FramebufferAttachment::Image(texture) => Some(&texture),
             _ => None
         }
     }

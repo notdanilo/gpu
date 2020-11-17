@@ -8,8 +8,8 @@ mod texture_2d {
 
     use gpu::ContextDisplay;
     use gpu::ContextBuilder;
-    use gpu::Texture2D;
-    use gpu::TextureFormat;
+    use gpu::Image2D;
+    use gpu::ImageFormat;
     use gpu::ColorFormat;
     use gpu::Type;
 
@@ -23,7 +23,7 @@ mod texture_2d {
         context.make_current().unwrap();
 
         let dimension = (123, 321);
-        let texture = Texture2D::allocate(&context, dimension, &TextureFormat(ColorFormat::RGBA, Type::U8));
+        let texture = Image2D::allocate(&context, dimension, &ImageFormat(ColorFormat::RGBA, Type::U8));
         assert_eq!(texture.dimensions(), dimension);
     }
 
@@ -45,10 +45,10 @@ mod texture_2d {
             }
         }
 
-        let data_in_format = TextureFormat(ColorFormat::components(components),
-                                           Type::U8);
-        let texture = Texture2D::from_data(&context, dimension, &data_in_format, &data_in,
-                                           &data_in_format);
+        let data_in_format = ImageFormat(ColorFormat::components(components),
+                                         Type::U8);
+        let texture = Image2D::from_data(&context, dimension, &data_in_format, &data_in,
+                                         &data_in_format);
 
         assert_eq!(components, texture.format().color_format().size());
         assert_eq!(dimension, texture.dimensions());

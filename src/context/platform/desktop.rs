@@ -61,11 +61,9 @@ impl HasContext for Context {
             context.make_current().expect("Context make current failed.");
         }
 
-        let gl = unsafe {
-            gl::load_with(|s| {
-                context.get_proc_address(s) as *const _
-            })
-        };
+        gl::load_with(|s| {
+            context.get_proc_address(s) as *const _
+        });
 
         let gl = GLContext {};
         Self { events_loop, context, gl }

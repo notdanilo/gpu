@@ -8,7 +8,7 @@ use crate::{Context, Framebuffer, GLContext};
 
 /// A program that clears colors, depth and stencil of a `framebuffer`.
 pub struct ClearProgram {
-    gl: GLContext,
+    _gl: GLContext,
     color: (f32, f32, f32, f32),
     depth: f32,
     stencil: i32
@@ -28,7 +28,7 @@ impl ClearProgram {
         let color = (0.0, 0.0, 0.0, 0.0);
         let depth = 1.0; // FIXME: is it default?
         let stencil = 0; // FIXME: is it default?
-        Self { gl, color, depth, stencil}
+        Self { _gl: gl, color, depth, stencil}
     }
 
     /// Sets the color clear value.

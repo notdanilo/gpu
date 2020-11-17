@@ -5,7 +5,7 @@ type VertexArrayObjectResource = u32;
 
 /// `VertexArrayObject` representation.
 pub struct VertexArrayObject {
-    gl       : GLContext,
+    _gl: GLContext,
     resource : VertexArrayObjectResource,
     vertices : usize
 }
@@ -20,7 +20,7 @@ impl VertexArrayObject {
             resource
         };
         let vertices = 0;
-        Self { gl, resource, vertices }
+        Self { _gl: gl, resource, vertices }
     }
 
     pub(crate) fn resource(&self) -> VertexArrayObjectResource {
