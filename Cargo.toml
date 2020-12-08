@@ -7,7 +7,7 @@ license       = "Apache-2.0"
 description   = "An ergonomic GPU API"
 readme        = "README.md"
 documentation = "https://docs.rs/gpu"
-repository    = "https://github.com/danguafer/gpu"
+repository    = "https://github.com/notdanilo/gpu"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
