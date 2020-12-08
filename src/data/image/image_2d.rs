@@ -2,8 +2,6 @@ use crate::prelude::*;
 use crate::Context;
 
 use crate::ImageFormat;
-use crate::ColorFormat;
-use crate::Type;
 use crate::Image;
 
 
@@ -13,16 +11,15 @@ use crate::Image;
 pub struct Image2D {
     /// Base texture object.
     #[shrinkwrap(main_field)]
-    pub texture : Image,
+    pub image: Image,
     dimensions : (usize,usize)
 }
 
 impl Image2D {
-    fn new(context:&Context) -> Self {
-        let format     = ImageFormat::new(ColorFormat::RGBA, Type::F32);
-        let texture    = Image::new(context, format, gl::TEXTURE_2D);
+    fn new(context:&Context, format: &ImageFormat) -> Self {
+        let image      = Image::new(context, format, gl::TEXTURE_2D);
         let dimensions = (0,0);
-        Self {texture,dimensions}
+        Self { image,dimensions}
     }
 
     /// Gets the dimensions.
@@ -33,7 +30,7 @@ impl Image2D {
     /// Allocates a new `Image2D` with the specified dimensions and `TextureFormat`.
     pub fn allocate
     (context:&Context, dimensions:(usize, usize), format:&ImageFormat) -> Self {
-        let mut texture = Self::new(context);
+        let mut texture = Self::new(context, format);
         texture.reallocate(dimensions, &format);
         texture
     }
@@ -81,7 +78,7 @@ impl Image2D {
         let mut data : Vec<T> = Vec::with_capacity(capacity);
         unsafe {
             data.set_len(capacity);
-            let (format, type_) = self.texture.format().get_format_and_type();
+            let (format, type_) = self.image.format().get_format_and_type();
 
             gl::ActiveTexture(gl::TEXTURE0);
             gl::BindTexture(gl::TEXTURE_2D, self.internal());

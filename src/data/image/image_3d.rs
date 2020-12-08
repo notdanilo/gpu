@@ -2,8 +2,6 @@ use crate::prelude::*;
 use crate::Context;
 
 use crate::ImageFormat;
-use crate::ColorFormat;
-use crate::Type;
 use crate::Image;
 use std::ffi::c_void;
 
@@ -18,8 +16,7 @@ pub struct Image3D {
 }
 
 impl Image3D {
-    fn new(context:&Context) -> Self {
-        let format     = ImageFormat::new(ColorFormat::RGBA, Type::F32);
+    fn new(context:&Context, format: &ImageFormat) -> Self {
         let texture    = Image::new(context, format, gl::TEXTURE_3D);
         let dimensions = (0,0,0);
         Self {texture,dimensions}
@@ -33,7 +30,7 @@ impl Image3D {
     /// Allocates a new `Image3D` with the specified dimensions and `TextureFormat`.
     pub fn allocate
     (context:&Context, dimensions: (usize, usize, usize), format: &ImageFormat) -> Self {
-        let mut texture = Self::new(context);
+        let mut texture = Self::new(context, format);
         texture.reallocate(dimensions, &format);
         texture
     }
@@ -41,7 +38,7 @@ impl Image3D {
     /// Creates a new `Image3D` from a slice.
     pub fn from_data<T>
     (context:&Context, dimensions: (usize, usize, usize), format: &ImageFormat, data: &[T], data_format: &ImageFormat) -> Self {
-        let mut texture = Self::new(context);
+        let mut texture = Self::new(context, format);
         texture.set_data(dimensions, &format, data, &data_format);
         texture
     }

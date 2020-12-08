@@ -41,7 +41,8 @@ pub struct Image {
 
 impl Image {
     /// Creates a new `Image` with the specified `ImageFormat` and the internal OpenGL `Type`.
-    pub fn new(context:&Context, format: ImageFormat, type_:u32) -> Self {
+    pub fn new(context:&Context, format: &ImageFormat, type_:u32) -> Self {
+        let format = format.clone();
         let gl = context.gl_context();
         let resource = unsafe {
             let mut resource = 0;
