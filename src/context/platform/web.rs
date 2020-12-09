@@ -76,7 +76,7 @@ impl HasContext for Context {
         std::ptr::null()
     }
 
-    fn inner_dimensions(&self) -> (usize, usize) {
+    fn resolution(&self) -> (usize, usize) {
         (self.canvas.width() as usize, self.canvas.height() as usize)
     }
 }

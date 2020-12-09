@@ -103,7 +103,7 @@ impl HasContext for Context {
         self.context.get_proc_address(addr)
     }
 
-    fn inner_dimensions(&self) -> (usize, usize) {
+    fn resolution(&self) -> (usize, usize) {
         let dpi      = self.context.get_hidpi_factor();
         let logical  = self.context.get_inner_size().expect("Couldn't get inner size");
         let physical = logical.to_physical(dpi);

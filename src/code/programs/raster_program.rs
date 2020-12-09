@@ -30,7 +30,7 @@ pub enum RasterGeometry {
 
 impl RasterProgram {
     /// Creates a new `RasterProgram` with a `FragmentShader` and ` VertexShader`.
-    pub fn new(context:&Context, fragment_shader:&FragmentShader, vertex_shader:&VertexShader) -> Result<Self, String> {
+    pub fn new(context:&Context, vertex_shader:&VertexShader, fragment_shader:&FragmentShader) -> Result<Self, String> {
         let program = Program::new(context);
         unsafe {
             gl::AttachShader(program.resource(), vertex_shader.resource());
@@ -69,6 +69,20 @@ impl RasterProgram {
             let (width,height) = framebuffer.dimensions();
             gl::Viewport(0, 0, width as i32, height as i32);
             gl::DrawArrays(raster_geometry as u32, 0, n_vertices as i32);
+        }
+    }
+
+    pub fn indexed_raster(&self, framebuffer: &Framebuffer, vertex_array_object: &VertexArrayObject, raster_geometry: RasterGeometry, n_indices: usize) {
+        unsafe {
+            framebuffer.bind();
+            self.use_();
+            vertex_array_object.bind();
+            gl::Enable(gl::PROGRAM_POINT_SIZE);
+            let (width,height) = framebuffer.dimensions();
+            gl::Viewport(0, 0, width as i32, height as i32);
+            // gl::DrawArrays(raster_geometry as u32, 0, n_vertices as i32);
+            // FIXME: Remove hardcoded gl::UNSIGNED_INT. Get the type from vao.index_buffer().type() or something.
+            gl::DrawElements(raster_geometry as u32, n_indices as i32, gl::UNSIGNED_INT, std::ptr::null());
         }
     }
 }

@@ -51,7 +51,7 @@ impl ClearProgram {
     /// ```rust,ignore
     /// clear(framebuffer, ClearProgram::COLOR | ClearProgram::DEPTH | ClearProgram::STENCIL)
     /// ```
-    pub fn clear(&self, framebuffer:&mut Framebuffer, clear_mask: u32) {
+    pub fn clear(&self, framebuffer:&Framebuffer, clear_mask: u32) {
         unsafe {
             framebuffer.bind();
             gl::ClearColor(self.color.0, self.color.1, self.color.2, self.color.3);

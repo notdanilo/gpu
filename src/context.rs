@@ -26,8 +26,8 @@ pub trait HasContext: HasGLContext {
     /// OpenGL function dynamic loading.
     fn get_proc_address(&self, addr: &str) -> *const ();
 
-    /// Gets the inner dimensions of the `ContextDisplay`.
-    fn inner_dimensions(&self) -> (usize, usize);
+    /// Gets the `ContextDisplay`'s resolution.
+    fn resolution(&self) -> (usize, usize);
 }
 
 /// The `Context` object.

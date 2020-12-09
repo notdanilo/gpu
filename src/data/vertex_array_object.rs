@@ -3,6 +3,7 @@ use crate::{Context, GLContext};
 
 type VertexArrayObjectResource = u32;
 
+// TODO: Better naming?
 /// `VertexArrayObject` representation.
 pub struct VertexArrayObject {
     _gl: GLContext,
@@ -33,6 +34,7 @@ impl VertexArrayObject {
         }
     }
 
+    // TODO: Allow to define the VertexBuffer component type. (It's hardcoded to gl::FALSE)
     /// Sets a `Buffer` as a vertices sources, where each vertex has `n_elements`
     pub fn set_vertex_buffer(&mut self, buffer : &Buffer, attribute_index: usize, n_elements: usize) {
         self.bind();
@@ -43,24 +45,12 @@ impl VertexArrayObject {
         }
     }
 
-    /// Sets the number of vertices.
-    pub fn set_vertices(&mut self, vertices : usize) {
-        self.vertices = vertices;
+    pub fn set_index_buffer(&mut self, buffer : &Buffer) {
+        self.bind();
+        unsafe {
+            gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, buffer.resource());
+        }
     }
-
-    /// Gets the number of vertices.
-    pub fn get_vertices(&self) -> usize {
-        self.vertices
-    }
-
-    // TODO:
-    // pub fn set_index_buffer(&mut self, buffer : &Buffer, elements: u32) {
-    //     unsafe {
-    //         gl::BindVertexArray(self.id);
-    //         gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, buffer.id);
-    //         gl::
-    //     }
-    // }
 }
 
 impl Drop for VertexArrayObject {
