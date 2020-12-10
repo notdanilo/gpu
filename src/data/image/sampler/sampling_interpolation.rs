@@ -31,6 +31,14 @@ impl SamplingInterpolation {
         Self { minification, magnification }
     }
 
+    /// Constructs both `minification` and `magnification` with the same `Interpolation`.
+    pub fn all(all: Interpolation) -> Self {
+        Self {
+            minification: all,
+            magnification: all
+        }
+    }
+
     /// Gets the minification `Interpolation`.
     pub fn minification(&self) -> Interpolation {
         self.minification

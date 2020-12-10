@@ -78,6 +78,8 @@ impl RasterProgram {
             self.use_();
             vertex_array_object.bind();
             gl::Enable(gl::PROGRAM_POINT_SIZE);
+            gl::Enable(gl::BLEND);
+            gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA);
             let (width,height) = framebuffer.dimensions();
             gl::Viewport(0, 0, width as i32, height as i32);
             // gl::DrawArrays(raster_geometry as u32, 0, n_vertices as i32);

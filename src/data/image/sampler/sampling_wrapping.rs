@@ -35,6 +35,15 @@ impl SamplingWrapping {
         Self { x, y, z }
     }
 
+    /// Constructs `x`, `y` and `z` with the same `Wrapping` setup.
+    pub fn all(all: Wrapping) -> Self {
+        Self {
+            x: all,
+            y: all,
+            z: all
+        }
+    }
+
     /// Gets the `Wrapping` method over `x`.
     pub fn x(&self) -> Wrapping {
         self.x
