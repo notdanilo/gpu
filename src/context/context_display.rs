@@ -1,7 +1,4 @@
-
-// ======================
-// === ContextDisplay ===
-// ======================
+use crate::Window;
 
 /// Kinds of `Context`'s displays.
 pub enum ContextDisplay {
@@ -10,5 +7,5 @@ pub enum ContextDisplay {
     /// The whole screen.
     Screen,
     /// A window with name and dimensions.
-    Window(String, usize, usize)
+    Window(Window)
 }

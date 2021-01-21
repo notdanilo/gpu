@@ -27,9 +27,9 @@ impl HasContext for Context {
         let mut window_builder = glutin::WindowBuilder::new();
 
         match &builder.display {
-            ContextDisplay::Window(name, width, height) => {
-                window_builder = window_builder.with_title(name)
-                    .with_dimensions(glutin::dpi::LogicalSize::new(*width as f64, *height as f64));
+            ContextDisplay::Window(window) => {
+                window_builder = window_builder.with_title(window.title())
+                    .with_dimensions(glutin::dpi::LogicalSize::new(window.size().0 as f64, window.size().1 as f64));
             },
             ContextDisplay::Screen => {
                 window_builder = window_builder.with_title("")
@@ -43,7 +43,7 @@ impl HasContext for Context {
         }
 
         let context = match builder.display {
-            ContextDisplay::Window(_, _, _) | ContextDisplay::Screen => {
+            ContextDisplay::Window(_) | ContextDisplay::Screen => {
                 glutin::ContextBuilder::new().with_vsync(builder.vsync)
                     .build_windowed(window_builder, &events_loop)
                     .unwrap()
