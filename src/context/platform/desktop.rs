@@ -1,4 +1,4 @@
-use crate::{ContextBuilder, ContextDisplay, HasContext, HasGLContext, GLContext};
+use crate::{ContextBuilder, ContextDisplay, HasContext, HasGLContext, GLContext, OnResizeEvent};
 
 pub use glutin::ContextError;
 use glutin::ContextTrait;
@@ -10,6 +10,7 @@ use glutin::ContextTrait;
 
 /// GPU `Context` representation.
 pub struct Context {
+    display     : ContextDisplay,
     events_loop : glutin::EventsLoop,
     context     : glutin::WindowedContext,
     gl          : GLContext
@@ -22,7 +23,7 @@ impl HasGLContext for Context {
 }
 
 impl HasContext for Context {
-    fn new(builder:&ContextBuilder) -> Self {
+    fn new(builder: ContextBuilder) -> Self {
         let events_loop = glutin::EventsLoop::new();
         let mut window_builder = glutin::WindowBuilder::new();
 
@@ -66,23 +67,49 @@ impl HasContext for Context {
         });
 
         let gl = GLContext {};
-        Self { events_loop, context, gl }
+        Self { display: builder.display, events_loop, context, gl }
+    }
+
+    fn display(&self) -> &ContextDisplay {
+        &self.display
+    }
+
+    fn display_mut(&mut self) -> &mut ContextDisplay {
+        &mut self.display
     }
 
     fn run(&mut self) -> bool {
         let events_loop = &mut self.events_loop;
         let context = &mut self.context;
+        let display = &mut self.display;
         let mut available = true;
         events_loop.poll_events(|event| {
-            if let glutin::Event::WindowEvent{ event, .. } = event {
-                match event {
-                    glutin::WindowEvent::CloseRequested => available = false,
-                    glutin::WindowEvent::Resized(logical_size) => {
-                        let dpi_factor = context.get_hidpi_factor();
-                        context.resize(logical_size.to_physical(dpi_factor));
-                    },
-                    _ => ()
-                }
+            match event {
+                glutin::Event::WindowEvent { event, .. } => {
+                    match event {
+                        glutin::WindowEvent::CloseRequested => available = false,
+                        glutin::WindowEvent::Resized(logical_size) => {
+                            let dpi_factor = context.get_hidpi_factor();
+                            let size = logical_size.to_physical(dpi_factor);
+                            context.resize(size);
+                            if let ContextDisplay::Window(window) = display {
+                                window.set_size((size.width as usize, size.height as usize));
+                            }
+                        },
+                        glutin::WindowEvent::CursorMoved {device_id, modifiers, position} => {
+                            let dpi_factor = context.get_hidpi_factor();
+                            let position = position.to_physical(dpi_factor);
+                            println!("Cursor {}x{}", position.x, position.y);
+                        },
+                        glutin::WindowEvent::KeyboardInput {device_id,input} => {
+                            input.virtual_keycode.map(|vk| {
+
+                            });
+                        }
+                        _ => ()
+                    }
+                },
+                _ => ()
             }
         });
         available

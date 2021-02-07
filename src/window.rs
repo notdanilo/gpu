@@ -1,4 +1,8 @@
+// FIXME: Move it to another place.
 pub type Size2 = (usize, usize);
+
+// FIXME: Move Window to another crate (called display or window or something)
+//  `gpu` shouldn't handle mouse or keyboard.
 
 pub struct OnResizeEvent {
     pub previous_size: Size2,
@@ -14,7 +18,7 @@ impl OnResizeEvent {
 pub struct Window {
     title: String,
     size: (usize, usize),
-    on_resize_callback: Option<Box<dyn FnMut(OnResizeEvent) + 'static>>
+    pub(crate) on_resize_callback: Option<Box<dyn FnMut(OnResizeEvent) + 'static>>
 }
 
 impl Window {

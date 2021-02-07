@@ -15,7 +15,7 @@ enum FramebufferAttachment {
 pub struct Framebuffer {
     _gl: GLContext,
     resource   : FramebufferResource,
-    dimensions : (usize, usize),
+    size: (usize, usize),
     color      : FramebufferAttachment,
     _depth     : FramebufferAttachment,
     _stencil   : FramebufferAttachment
@@ -39,7 +39,7 @@ impl Framebuffer {
         let _depth     = FramebufferAttachment::Renderbuffer(Renderbuffer::default(context));
         let _stencil   = FramebufferAttachment::Renderbuffer(Renderbuffer::default(context));
         let gl         = context.gl_context();
-        Self { _gl: gl, resource, dimensions, color, _depth, _stencil }
+        Self { _gl: gl, resource, size: dimensions, color, _depth, _stencil }
     }
 
     pub(crate) fn resource(&self) -> FramebufferResource {
@@ -62,11 +62,11 @@ impl Framebuffer {
             gl::BindFramebuffer(gl::FRAMEBUFFER, resource);
             resource
         };
-        let mut dimensions = (0, 0);
+        let mut size = (0, 0);
 
         let color = match color {
             Some(image) => {
-                dimensions = image.dimensions();
+                size = image.dimensions();
                 unsafe {
                     gl::FramebufferTexture2D(gl::FRAMEBUFFER, gl::COLOR_ATTACHMENT0,
                                              gl::TEXTURE_2D, image.internal(), 0);
@@ -84,11 +84,11 @@ impl Framebuffer {
             None => FramebufferAttachment::None
         };
 
-        Ok(Self { _gl: gl, resource, dimensions, color, _depth, _stencil})
+        Ok(Self { _gl: gl, resource, size, color, _depth, _stencil})
     }
 
     /// Gets the `Framebuffer`'s dimension.
-    pub fn dimensions(&self) -> (usize, usize) { self.dimensions }
+    pub fn size(&self) -> (usize, usize) { self.size }
 
     /// Returns the `Image2D` used as the `ColorBuffer` if any.
     pub fn color(&self) -> Option<&Image2D> {

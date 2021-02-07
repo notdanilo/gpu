@@ -44,7 +44,7 @@ impl ContextBuilder {
 
     /// Creates a new `Context` with all the parameters specified in the `ContextBuilder`.
     pub fn build(self) -> Context {
-        Box::new(BackendContext::new(&self))
+        Box::new(BackendContext::new(self))
     }
 
     #[cfg(target_arch = "wasm32")]
