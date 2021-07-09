@@ -1,43 +1,36 @@
 //! Context creation module.
 
-mod context_display;
-pub use context_display::ContextDisplay;
-
 mod context_builder;
 pub use context_builder::ContextBuilder;
 
 pub mod backend;
-pub(crate) use backend::gl_context::{GLContext, HasGLContext};
+pub(crate) use backend::gl_context::{GLContext, IsGLContext};
+
+pub use surface::Surface;
 
 /// A trait defining the `GPUContext` interface.
-pub trait HasContext: HasGLContext {
+pub trait IsContext: IsGLContext {
     /// Creates a new `Context`.
-    fn new(builder: ContextBuilder) -> Self where Self: Sized;
+    fn new(builder: ContextBuilder) -> Result<Self, String> where Self: Sized;
 
-    /// Gets a reference to the Context's Display.
-    fn display(&self) -> &ContextDisplay;
+    /// Gets a reference to the Context's Surface.
+    fn surface(&self) -> Option<&Surface>;
 
-    /// Gets a mutable reference to the Context's Display.
-    fn display_mut(&mut self) -> &mut ContextDisplay;
-
-    /// Runs the `Context` and returns `false` if the `Context` is no longer available.
-    fn run(&mut self) -> bool;
-
-    /// Makes the `Context` current for the current thread.
-    fn make_current(&self) -> Result<(), ContextError>;
+    /// Gets a mutable reference to the Context's Surface.
+    fn surface_mut(&mut self) -> Option<&mut Surface>;
 
     /// Swap buffers for presenting in the `ContextDisplay`.
-    fn swap_buffers(&self) -> Result<(), ContextError>;
+    fn swap_buffers(&mut self) -> Result<(), ContextError>;
 
-    /// OpenGL function dynamic loading.
-    fn get_proc_address(&self, addr: &str) -> *const ();
+    /// Gets a reference to the default Framebuffer, if present.
+    fn framebuffer(&self) -> Option<&Framebuffer>;
 
-    /// Gets the `ContextDisplay`'s resolution.
-    fn resolution(&self) -> (usize, usize);
+    /// Gets a mutable reference to the default Framebuffer, if present.
+    fn framebuffer_mut(&mut self) -> Option<&mut Framebuffer>;
 }
 
 /// The `Context` object.
-pub type Context = Box<dyn HasContext>;
+pub type Context = Box<dyn IsContext>;
 
 #[cfg(not(all(target_arch = "wasm32")))]
 mod platform {
@@ -55,3 +48,4 @@ mod platform {
 
 /// The Context object.
 pub use platform::*;
+use crate::Framebuffer;

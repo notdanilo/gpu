@@ -1,18 +1,20 @@
-use super::{Context, ContextDisplay, BackendContext, HasContext};
+use super::{Context, BackendContext, IsContext};
+use surface::Surface;
+
+// FIXME: We no longer need ContextBuilder as it would only require us to pass Option<Surface> to it.
+//  We could define Context::new(surface: Option<Surface>) instead.
 
 /// A builder for `Context`.
 pub struct ContextBuilder {
-    pub(super) cursor  : bool,
     pub(super) vsync   : bool,
-    pub(super) display : ContextDisplay
+    pub(super) surface : Option<Surface>
 }
 
 impl Default for ContextBuilder {
     fn default() -> Self {
-        let cursor  = false;
-        let vsync   = true;
-        let display = ContextDisplay::Screen;
-        Self {cursor,vsync,display}
+        let surface = None;
+        let vsync = true;
+        Self { vsync, surface }
     }
 }
 
@@ -20,37 +22,27 @@ impl ContextBuilder {
     /// Creates a new `ContextBuilder` with the default parameters:
     /// cursor = false
     /// vsync  = true
-    /// display = ContextDisplay::None
+    /// surface = None
     pub fn new() -> Self { Default::default() }
 
-    /// Sets the display kind of the `Context`.
-    pub fn with_display(mut self, display:ContextDisplay) -> Self {
-        self.display = display;
+    /// Sets the surface of the `Context`.
+    pub fn with_surface(mut self, surface: Option<Surface>) -> Self {
+        self.surface = surface;
         self
     }
 
-    // FIXME: This doesn't make sense for a context without a display.
-    /// Sets if we want a cursor for the created `Context`.
-    pub fn cursor(mut self, cursor:bool) -> Self {
-        self.cursor = cursor;
-        self
-    }
-
-    /// Sets if we want vsync for the created `Context`.
-    pub fn vsync(mut self, vsync:bool) -> Self {
+    /// Sets vertical synchronization.
+    pub fn with_vsync(mut self, vsync: bool) -> Self {
         self.vsync = vsync;
         self
     }
 
     /// Creates a new `Context` with all the parameters specified in the `ContextBuilder`.
-    pub fn build(self) -> Context {
-        Box::new(BackendContext::new(self))
-    }
-
-    #[cfg(target_arch = "wasm32")]
-    /// Creates a new `Context` from a `web_sys::HtmlCanvasElement` with all the parameters
-    /// specified in the `ContextBuilder`.
-    pub fn build_from_canvas(self, canvas: web_sys::HtmlCanvasElement) -> Context {
-        Box::new(BackendContext::from_canvas(canvas))
+    pub fn build(self) -> Result<Context, String> {
+        // FIXME: Why can't I just result.map(Box::new)?
+        match BackendContext::new(self) {
+            Ok(context) => Ok(Box::new(context)),
+            Err(e) => Err(e)
+        }
     }
 }

@@ -1,3 +1,6 @@
 [submodule "lib/glow"]
 	path = lib/glow
 	url = git@github.com:notdanilo/glow
+[submodule "glutin"]
+	path = glutin
+	url = git@github.com:rust-windowing/glutin

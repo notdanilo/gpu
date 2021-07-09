@@ -4,7 +4,7 @@ use crate::context::ContextBuilder;
 
 use web_sys::HtmlCanvasElement;
 use wasm_bindgen::JsCast;
-use crate::{GLContext, HasContext, HasGLContext};
+use crate::{GLContext, IsContext, IsGLContext};
 
 /// Web Contexts doesn't emit any error.
 pub type ContextError = ();
@@ -36,16 +36,16 @@ impl Context {
     }
 }
 
-impl HasGLContext for Context {
+impl IsGLContext for Context {
     fn gl_context(&self) -> GLContext {
         self.gl.clone()
     }
 }
 
-impl HasContext for Context {
+impl IsContext for Context {
     fn new(_builder:&ContextBuilder) -> Self {
         let document = web_sys::window()
-            .expect("Couldn't get window")
+            .expect("Couldn't get surface")
             .document()
             .expect("Couldn't get document");
         let canvas = document

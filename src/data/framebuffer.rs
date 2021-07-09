@@ -29,19 +29,6 @@ pub struct Framebuffer {
 // 5. Check attachment dimensions (does framebuffer completeness check takes that into account?)
 
 impl Framebuffer {
-    // TODO: Make this function private and only allow to get the default Framebuffer instance
-    // through context.framebuffer()
-    /// The default `Framebuffer` created during the `Context` creation.
-    pub fn default(context:&Context) -> Self {
-        let dimensions = context.resolution();
-        let resource   = Default::default();
-        let color      = FramebufferAttachment::Renderbuffer(Renderbuffer::default(context));
-        let _depth     = FramebufferAttachment::Renderbuffer(Renderbuffer::default(context));
-        let _stencil   = FramebufferAttachment::Renderbuffer(Renderbuffer::default(context));
-        let gl         = context.gl_context();
-        Self { _gl: gl, resource, size: dimensions, color, _depth, _stencil }
-    }
-
     pub(crate) fn resource(&self) -> FramebufferResource {
         self.resource
     }

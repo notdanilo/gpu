@@ -43,7 +43,7 @@ mod clear_program {
             }
         "#).unwrap();
 
-        let raster_program = RasterProgram::new(&context, &fragment_shader, &vertex_shader)
+        let raster_program = RasterProgram::new(&context, &vertex_shader, &fragment_shader)
             .unwrap();
 
         let framebuffer = Framebuffer::default(&context);
@@ -116,7 +116,7 @@ mod clear_program {
             }
         "#).unwrap();
 
-        let raster_program = RasterProgram::new(&context, &fragment_shader, &vertex_shader)
+        let raster_program = RasterProgram::new(&context, &vertex_shader, &fragment_shader)
             .unwrap();
 
         let components = 4;

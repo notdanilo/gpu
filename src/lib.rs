@@ -21,10 +21,7 @@ mod prelude;
 mod context;
 mod data;
 mod code;
-mod window;
 
-pub use prelude::*;
 pub use data::*;
 pub use code::*;
 pub use context::*;
-pub use window::*;
