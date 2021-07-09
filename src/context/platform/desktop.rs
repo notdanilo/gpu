@@ -1,8 +1,20 @@
-use crate::{ContextBuilder, ContextDisplay, HasContext, HasGLContext, GLContext};
+use crate::{ContextBuilder, IsContext, IsGLContext, GLContext, Framebuffer};
 
 pub use glutin::ContextError;
-use glutin::ContextTrait;
+use surface::Surface;
 
+pub trait ContextBuilderExt {
+    fn build_raw_from_surface(self, surface: &Surface) -> Result<glutin::RawContext<glutin::NotCurrent>, String>;
+}
+
+#[cfg(any(
+target_os = "linux",
+target_os = "dragonfly",
+target_os = "freebsd",
+target_os = "netbsd",
+target_os = "openbsd"
+))]
+pub mod unix;
 
 // ===============
 // === Context ===
@@ -10,103 +22,80 @@ use glutin::ContextTrait;
 
 /// GPU `Context` representation.
 pub struct Context {
-    events_loop : glutin::EventsLoop,
-    context     : glutin::WindowedContext,
-    gl          : GLContext
+    surface     : Option<Surface>,
+    context     : glutin::RawContext<glutin::PossiblyCurrent>,
+    gl          : GLContext,
+    framebuffer : Option<Framebuffer>
 }
 
-impl HasGLContext for Context {
+impl IsGLContext for Context {
     fn gl_context(&self) -> GLContext {
         self.gl.clone()
     }
-}
 
-impl HasContext for Context {
-    fn new(builder:&ContextBuilder) -> Self {
-        let events_loop = glutin::EventsLoop::new();
-        let mut window_builder = glutin::WindowBuilder::new();
-
-        match &builder.display {
-            ContextDisplay::Window(window) => {
-                window_builder = window_builder.with_title(window.title())
-                    .with_dimensions(glutin::dpi::LogicalSize::new(window.size().0 as f64, window.size().1 as f64));
-            },
-            ContextDisplay::Screen => {
-                window_builder = window_builder.with_title("")
-                    .with_fullscreen(Some(events_loop.get_primary_monitor()));
-            },
-            ContextDisplay::None => {
-                window_builder = window_builder.with_title("")
-                    .with_fullscreen(Some(events_loop.get_primary_monitor()))
-                    .with_visibility(false);
-            }
-        }
-
-        let context = match builder.display {
-            ContextDisplay::Window(_) | ContextDisplay::Screen => {
-                glutin::ContextBuilder::new().with_vsync(builder.vsync)
-                    .build_windowed(window_builder, &events_loop)
-                    .unwrap()
-            },
-            ContextDisplay::None => {
-                glutin::ContextBuilder::new().with_vsync(builder.vsync)
-                    .build_windowed(window_builder, &events_loop) // the guideline for creating a headless context is: try build_headless, if it fails, fallback to hidden window
-                    .unwrap()
-            }
-        };
-
-        context.hide_cursor(!builder.cursor);
-
-        unsafe {
-            context.make_current().expect("Context make current failed.");
-        }
-
-        gl::load_with(|s| {
-            context.get_proc_address(s) as *const _
-        });
-
-        let gl = GLContext {};
-        Self { events_loop, context, gl }
-    }
-
-    fn run(&mut self) -> bool {
-        let events_loop = &mut self.events_loop;
-        let context = &mut self.context;
-        let mut available = true;
-        events_loop.poll_events(|event| {
-            if let glutin::Event::WindowEvent{ event, .. } = event {
-                match event {
-                    glutin::WindowEvent::CloseRequested => available = false,
-                    glutin::WindowEvent::Resized(logical_size) => {
-                        let dpi_factor = context.get_hidpi_factor();
-                        context.resize(logical_size.to_physical(dpi_factor));
-                    },
-                    _ => ()
-                }
-            }
-        });
-        available
-    }
-
-    fn make_current(&self) -> Result<(), ContextError> {
-        unsafe {
-            self.context.make_current()
-
-        }
-    }
-
-    fn swap_buffers(&self) -> Result<(), ContextError> {
-        self.context.swap_buffers()
-    }
-
-    fn get_proc_address(&self, addr: &str) -> *const () {
+    fn get_proc_address(&self, addr: &str) -> *const std::ffi::c_void {
         self.context.get_proc_address(addr)
     }
+}
 
-    fn resolution(&self) -> (usize, usize) {
-        let dpi      = self.context.get_hidpi_factor();
-        let logical  = self.context.get_inner_size().expect("Couldn't get inner size");
-        let physical = logical.to_physical(dpi);
-        (physical.width as usize, physical.height as usize)
+impl IsContext for Context {
+    fn framebuffer(&self) -> Option<&Framebuffer> {
+        self.framebuffer.as_ref()
+    }
+
+    fn framebuffer_mut(&mut self) -> Option<&mut Framebuffer> {
+        self.framebuffer.as_mut()
+    }
+
+    fn new(builder: ContextBuilder) -> Result<Self, String> {
+        let surface = builder.surface.expect("Headless context still not supported.");
+        let context = glutin::ContextBuilder::new()
+            .with_vsync(builder.vsync)
+            .with_double_buffer(Some(true))
+            .build_raw_from_surface(&surface)?;
+        let context = unsafe {
+            context.make_current().map_err(|_| "Couldn't make current.".to_string())?
+        };
+        let framebuffer = None;
+        let gl = GLContext {};
+        let context = Self { surface: Some(surface), framebuffer, context, gl };
+        Ok(context)
+        // let context = match builder.surface {
+        //     ContextDisplay::Window(_) | ContextDisplay::Screen => {
+        //         glutin::ContextBuilder::new().with_vsync(builder.vsync)
+        //             .build_windowed(window_builder, &events_loop)
+        //             .unwrap()
+        //     },
+        //     ContextDisplay::None => {
+        //         glutin::ContextBuilder::new().with_vsync(builder.vsync)
+        //             .build_windowed(window_builder, &events_loop) // the guideline for creating a headless context is: try build_headless, if it fails, fallback to hidden surface
+        //             .unwrap()
+        //     }
+        // };
+        //
+        // context.hide_cursor(!builder.cursor);
+        //
+        // unsafe {
+        //     context.make_current().expect("Context make current failed.");
+        // }
+        //
+        // gl::load_with(|s| {
+        //     context.get_proc_address(s) as *const _
+        // });
+        //
+        // let gl = GLContext {};
+        // Self { display: builder.surface, events_loop, context, gl }
+    }
+
+    fn surface(&self) -> Option<&Surface> {
+        self.surface.as_ref()
+    }
+
+    fn surface_mut(&mut self) -> Option<&mut Surface> {
+        self.surface.as_mut()
+    }
+
+    fn swap_buffers(&mut self) -> Result<(), ContextError> {
+        self.context.swap_buffers()
     }
 }

@@ -34,7 +34,7 @@ impl VertexArrayObject {
         }
     }
 
-    // TODO: Allow to define the VertexBuffer component type. (It's hardcoded to gl::FALSE)
+    // TODO: Allow to define the VertexBuffer component type. (It's hardcoded to gl::FLOAT)
     /// Sets a `Buffer` as a vertices sources, where each vertex has `n_elements`
     pub fn set_vertex_buffer(&mut self, buffer : &Buffer, attribute_index: usize, n_elements: usize) {
         self.bind();

@@ -14,14 +14,13 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 shrinkwraprs = "0.3.0"
+surface = { path = "../surface" }
 
 [target.'cfg(not(any(target_arch = "wasm32")))'.dependencies]
-glutin = "0.20.0"
 gl = "0.14.0"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-glow         = "0.6.0"
-web_sys      = { version = "0.3", package = "web-sys",features = ["console","Document", "Node", "Element", "HtmlElement", "HtmlCanvasElement"] }
+web_sys      = { version = "0.3", package = "web-sys", features = ["console","Document", "Node", "Element", "HtmlElement", "HtmlCanvasElement"] }
 wasm-bindgen = { version = "0.2" }
 
 [target.'cfg(target_arch = "wasm32")'.dev-dependencies]
