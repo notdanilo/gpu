@@ -72,6 +72,7 @@ impl RasterProgram {
         }
     }
 
+    /// Raster indexed vertices.
     pub fn indexed_raster(&self, framebuffer: &Framebuffer, vertex_array_object: &VertexArrayObject, raster_geometry: RasterGeometry, n_indices: usize) {
         unsafe {
             framebuffer.bind();

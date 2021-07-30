@@ -31,13 +31,13 @@ impl ContextBuilder {
 
     // FIXME: This doesn't make sense for a context without a display.
     /// Sets if we want a cursor for the created `Context`.
-    pub fn cursor(mut self, cursor:bool) -> Self {
+    pub fn with_cursor(mut self, cursor:bool) -> Self {
         self.cursor = cursor;
         self
     }
 
     /// Sets if we want vsync for the created `Context`.
-    pub fn vsync(mut self, vsync:bool) -> Self {
+    pub fn with_vsync(mut self, vsync:bool) -> Self {
         self.vsync = vsync;
         self
     }
