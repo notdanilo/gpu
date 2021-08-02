@@ -3,26 +3,28 @@ mod utils;
 #[cfg(test)]
 mod context {
     use super::utils::test;
-    use gpu::{ContextBuilder, Window};
-    use gpu::ContextDisplay;
+    // use gpu::{ContextBuilder, Window};
+    // use gpu::ContextDisplay;
 
 
     #[test]
     fn create_context() {
-        let context_builder = ContextBuilder::new().with_display(ContextDisplay::None);
-        let context = context_builder.build();
-
-        context.make_current().expect("Couldn't make current");
+        // let context_builder = ContextBuilder::new().with_display(ContextDisplay::None);
+        // let context = context_builder.build();
+        //
+        // context.make_current().expect("Couldn't make current");
+        unimplemented!()
     }
 
     #[test]
     fn present_context() {
-        let window = Window::new("present_context (black)".into(), (320, 240));
-        let context_builder = ContextBuilder::new().with_display(ContextDisplay::Window(window));
-        let context = context_builder.build();
-
-        context.make_current().expect("Couldn't make current");
-
-        context.swap_buffers().expect("Couldn't swap buffers");
+        // let window = Window::new("present_context (black)".into(), (320, 240));
+        // let context_builder = ContextBuilder::new().with_display(ContextDisplay::Window(window));
+        // let context = context_builder.build();
+        //
+        // context.make_current().expect("Couldn't make current");
+        //
+        // context.swap_buffers().expect("Couldn't swap buffers");
+        unimplemented!()
     }
 }

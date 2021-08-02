@@ -1,18 +1,19 @@
-use super::{Context, ContextDisplay, BackendContext, HasContext};
+use super::{Context, BackendContext, HasContext};
+use surface::Surface;
 
 /// A builder for `Context`.
 pub struct ContextBuilder {
     pub(super) cursor  : bool,
     pub(super) vsync   : bool,
-    pub(super) display : ContextDisplay
+    pub(super) surface : Option<Surface>
 }
 
 impl Default for ContextBuilder {
     fn default() -> Self {
         let cursor  = false;
         let vsync   = true;
-        let display = ContextDisplay::Screen;
-        Self {cursor,vsync,display}
+        let surface = None;
+        Self {cursor, vsync, surface}
     }
 }
 
@@ -23,9 +24,9 @@ impl ContextBuilder {
     /// display = ContextDisplay::None
     pub fn new() -> Self { Default::default() }
 
-    /// Sets the display kind of the `Context`.
-    pub fn with_display(mut self, display:ContextDisplay) -> Self {
-        self.display = display;
+    /// Sets the surface of the `Context`.
+    pub fn with_surface(mut self, surface: Option<Surface>) -> Self {
+        self.surface = surface;
         self
     }
 

@@ -24,9 +24,10 @@ struct ImageResource {
 
 impl Drop for ImageResource {
     fn drop(&mut self) {
-        unsafe {
-            gl::DeleteTextures(1, &self.resource);
-        }
+        // unsafe {
+        //     gl::DeleteTextures(1, &self.resource);
+        // }
+        unimplemented!()
     }
 }
 
@@ -42,15 +43,16 @@ pub struct Image {
 impl Image {
     /// Creates a new `Image` with the specified `ImageFormat` and the internal OpenGL `Type`.
     pub fn new(context:&Context, format: &ImageFormat, type_:u32) -> Self {
-        let format = format.clone();
-        let gl = context.gl_context();
-        let resource = unsafe {
-            let mut resource = 0;
-            gl::GenTextures(1, &mut resource);
-            resource
-        };
-        let resource = Rc::new(ImageResource { resource });
-        Self { _gl: gl, resource, format, type_ }
+        // let format = format.clone();
+        // let gl = context.gl_context();
+        // let resource = unsafe {
+        //     let mut resource = 0;
+        //     gl::GenTextures(1, &mut resource);
+        //     resource
+        // };
+        // let resource = Rc::new(ImageResource { resource });
+        // Self { _gl: gl, resource, format, type_ }
+        unimplemented!()
     }
 
     /// Gets the internal OpenGL type.
@@ -64,9 +66,10 @@ impl Image {
     }
 
     pub(crate) fn bind(&self) {
-        unsafe {
-            gl::BindTexture(self.type_(), self.internal());
-        }
+        // unsafe {
+        //     gl::BindTexture(self.type_(), self.internal());
+        // }
+        unimplemented!()
     }
 
     /// Gets `TextureResource`.

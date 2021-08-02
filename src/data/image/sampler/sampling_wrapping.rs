@@ -13,11 +13,12 @@ pub enum Wrapping {
 
 impl Wrapping {
     pub(crate) fn get_internal(&self) -> i32 {
-        match self {
-            Self::Repeat => gl::REPEAT as i32,
-            Self::MirroredRepeat => gl::MIRRORED_REPEAT as i32,
-            Self::ClampToEdge => gl::CLAMP_TO_EDGE as i32
-        }
+        // match self {
+        //     Self::Repeat => gl::REPEAT as i32,
+        //     Self::MirroredRepeat => gl::MIRRORED_REPEAT as i32,
+        //     Self::ClampToEdge => gl::CLAMP_TO_EDGE as i32
+        // }
+        unimplemented!()
     }
 }
 

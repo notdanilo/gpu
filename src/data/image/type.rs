@@ -33,15 +33,16 @@ impl Type {
 
     /// Gets `OpenGL` internal reprensetation.
     pub fn format(&self) -> u32 {
-        match self {
-            Type::U8  => gl::UNSIGNED_BYTE,
-            Type::U16 => gl::UNSIGNED_SHORT,
-            Type::U32 => gl::UNSIGNED_INT,
-            Type::I8  => gl::BYTE,
-            Type::I16 => gl::SHORT,
-            Type::I32 => gl::INT,
-            Type::F16 => gl::HALF_FLOAT,
-            Type::F32 => gl::FLOAT
-        }
+        // match self {
+        //     Type::U8  => gl::UNSIGNED_BYTE,
+        //     Type::U16 => gl::UNSIGNED_SHORT,
+        //     Type::U32 => gl::UNSIGNED_INT,
+        //     Type::I8  => gl::BYTE,
+        //     Type::I16 => gl::SHORT,
+        //     Type::I32 => gl::INT,
+        //     Type::F16 => gl::HALF_FLOAT,
+        //     Type::F32 => gl::FLOAT
+        // }
+        unimplemented!()
     }
 }

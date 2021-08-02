@@ -16,39 +16,42 @@ pub struct ComputeProgram {
 impl ComputeProgram {
     /// Creates a new `RasterProgram` with a `FragmentShader` and ` VertexShader`.
     pub fn new(context: &Context, compute_shader:&ComputeShader) -> Result<Self, String> {
-        let program = Program::new(context);
-        unsafe {
-            gl::AttachShader(program.resource(), compute_shader.resource());
-            gl::LinkProgram(program.resource());
-
-            // Check for linking errors
-            let mut is_linked = gl::FALSE as i32;
-            gl::GetProgramiv(program.resource(), gl::LINK_STATUS, &mut is_linked);
-            if is_linked == gl::FALSE as i32 {
-                let buffer_size = 4096;
-                let mut length = 0;
-                let mut buffer : [u8; 4096] = [0; 4096];
-                gl::GetProgramInfoLog(program.resource(), buffer_size, &mut length, buffer.as_mut_ptr() as *mut i8);
-                let err = String::from_raw_parts(buffer.as_mut_ptr(), length as usize, buffer_size as usize);
-                return Err(err)
-            }
-        }
-
-        Ok(Self {program})
+        // let program = Program::new(context);
+        // unsafe {
+        //     gl::AttachShader(program.resource(), compute_shader.resource());
+        //     gl::LinkProgram(program.resource());
+        //
+        //     // Check for linking errors
+        //     let mut is_linked = gl::FALSE as i32;
+        //     gl::GetProgramiv(program.resource(), gl::LINK_STATUS, &mut is_linked);
+        //     if is_linked == gl::FALSE as i32 {
+        //         let buffer_size = 4096;
+        //         let mut length = 0;
+        //         let mut buffer : [u8; 4096] = [0; 4096];
+        //         gl::GetProgramInfoLog(program.resource(), buffer_size, &mut length, buffer.as_mut_ptr() as *mut i8);
+        //         let err = String::from_raw_parts(buffer.as_mut_ptr(), length as usize, buffer_size as usize);
+        //         return Err(err)
+        //     }
+        // }
+        //
+        // Ok(Self {program})
+        unimplemented!()
     }
 
     pub(crate) fn use_(&self) {
-        unsafe {
-            gl::UseProgram(self.resource());
-        }
+        // unsafe {
+        //     gl::UseProgram(self.resource());
+        // }
+        unimplemented!()
     }
 
     /// Launch one or more compute work `groups`.
     pub fn compute(&self, groups: (usize, usize, usize)) {
-        unsafe {
-            self.use_();
-            gl::DispatchCompute(groups.0 as u32, groups.1 as u32, groups.2 as u32);
-        }
+        // unsafe {
+        //     self.use_();
+        //     gl::DispatchCompute(groups.0 as u32, groups.1 as u32, groups.2 as u32);
+        // }
+        unimplemented!()
     }
 }
 
