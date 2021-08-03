@@ -47,44 +47,46 @@ impl Framebuffer {
     }
 
     pub(crate) fn bind(&self) {
-        let resource = self.resource();
-        unsafe {
-            gl::BindFramebuffer(gl::FRAMEBUFFER, resource);
-        }
+        // let resource = self.resource();
+        // unsafe {
+        //     gl::BindFramebuffer(gl::FRAMEBUFFER, resource);
+        // }
+        unimplemented!()
     }
 
     /// Creates a new `Framebuffer` with optional `color`, `depth` and `stencil`.
     pub fn new(context:&Context, color: Option<Image2D>, depth:Option<Image2D>, stencil:Option<Image2D>) -> Result<Self, String> {
-        let gl = context.gl_context();
-        let resource = unsafe {
-            let mut resource = 0;
-            gl::CreateFramebuffers(1, &mut resource);
-            gl::BindFramebuffer(gl::FRAMEBUFFER, resource);
-            resource
-        };
-        let mut dimensions = (0, 0);
-
-        let color = match color {
-            Some(image) => {
-                dimensions = image.dimensions();
-                unsafe {
-                    gl::FramebufferTexture2D(gl::FRAMEBUFFER, gl::COLOR_ATTACHMENT0,
-                                             gl::TEXTURE_2D, image.internal(), 0);
-                }
-                FramebufferAttachment::Image(image)
-            }
-            None => FramebufferAttachment::None
-        };
-        let _depth = match depth {
-            Some(texture) => FramebufferAttachment::Image(texture),
-            None => FramebufferAttachment::None
-        };
-        let _stencil = match stencil {
-            Some(texture) => FramebufferAttachment::Image(texture),
-            None => FramebufferAttachment::None
-        };
-
-        Ok(Self { _gl: gl, resource, dimensions, color, _depth, _stencil})
+        // let gl = context.gl_context();
+        // let resource = unsafe {
+        //     let mut resource = 0;
+        //     gl::CreateFramebuffers(1, &mut resource);
+        //     gl::BindFramebuffer(gl::FRAMEBUFFER, resource);
+        //     resource
+        // };
+        // let mut dimensions = (0, 0);
+        //
+        // let color = match color {
+        //     Some(image) => {
+        //         dimensions = image.dimensions();
+        //         unsafe {
+        //             gl::FramebufferTexture2D(gl::FRAMEBUFFER, gl::COLOR_ATTACHMENT0,
+        //                                      gl::TEXTURE_2D, image.internal(), 0);
+        //         }
+        //         FramebufferAttachment::Image(image)
+        //     }
+        //     None => FramebufferAttachment::None
+        // };
+        // let _depth = match depth {
+        //     Some(texture) => FramebufferAttachment::Image(texture),
+        //     None => FramebufferAttachment::None
+        // };
+        // let _stencil = match stencil {
+        //     Some(texture) => FramebufferAttachment::Image(texture),
+        //     None => FramebufferAttachment::None
+        // };
+        //
+        // Ok(Self { _gl: gl, resource, dimensions, color, _depth, _stencil})
+        unimplemented!()
     }
 
     /// Gets the `Framebuffer`'s dimension.
@@ -101,8 +103,9 @@ impl Framebuffer {
 
 impl Drop for Framebuffer {
     fn drop(&mut self) {
-        unsafe {
-            gl::DeleteFramebuffers(1, &self.resource());
-        }
+        // unsafe {
+        //     gl::DeleteFramebuffers(1, &self.resource());
+        // }
+        unimplemented!()
     }
 }

@@ -1,8 +1,5 @@
 //! Context creation module.
 
-mod context_display;
-pub use context_display::ContextDisplay;
-
 mod context_builder;
 pub use context_builder::ContextBuilder;
 

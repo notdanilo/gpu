@@ -17,9 +17,10 @@ pub struct Image3D {
 
 impl Image3D {
     fn new(context:&Context, format: &ImageFormat) -> Self {
-        let texture    = Image::new(context, format, gl::TEXTURE_3D);
-        let dimensions = (0,0,0);
-        Self {texture,dimensions}
+        // let texture    = Image::new(context, format, gl::TEXTURE_3D);
+        // let dimensions = (0,0,0);
+        // Self {texture,dimensions}
+        unimplemented!()
     }
 
     /// Gets the dimensions.
@@ -45,47 +46,50 @@ impl Image3D {
 
     /// Reallocates the memory on the GPU side.
     pub fn reallocate(&mut self, dimensions: (usize, usize, usize), format: &ImageFormat) {
-        self.dimensions = dimensions;
-        self.format = format.clone();
-        self.bind();
-        unsafe {
-            let tex_type        = self.type_();
-            let internal_format = format.internal_format();
-            gl::TexStorage3D(tex_type, 1, internal_format, dimensions.0 as i32, dimensions.1 as
-                i32, dimensions.2 as i32);
-        }
+        // self.dimensions = dimensions;
+        // self.format = format.clone();
+        // self.bind();
+        // unsafe {
+        //     let tex_type        = self.type_();
+        //     let internal_format = format.internal_format();
+        //     gl::TexStorage3D(tex_type, 1, internal_format, dimensions.0 as i32, dimensions.1 as
+        //         i32, dimensions.2 as i32);
+        // }
+        unimplemented!()
     }
 
     /// Sets the data on the GPU side.
     pub fn set_data<T>(&mut self, dimensions: (usize, usize, usize), format: &ImageFormat,
                        data: &[T], data_format: &ImageFormat) {
-        self.dimensions = dimensions;
-        self.format = format.clone();
-        self.bind();
-        unsafe {
-            let (color, ty)     = data_format.get_format_and_type();
-            let internal_format = format.internal_format() as i32;
-            let width           = dimensions.0 as i32;
-            let height          = dimensions.1 as i32;
-            let depth           = dimensions.2 as i32;
-            gl::TexImage3D(self.type_(),0,internal_format,width,height,depth,0,color,ty,data.as_ptr() as *const c_void);
-        }
+        // self.dimensions = dimensions;
+        // self.format = format.clone();
+        // self.bind();
+        // unsafe {
+        //     let (color, ty)     = data_format.get_format_and_type();
+        //     let internal_format = format.internal_format() as i32;
+        //     let width           = dimensions.0 as i32;
+        //     let height          = dimensions.1 as i32;
+        //     let depth           = dimensions.2 as i32;
+        //     gl::TexImage3D(self.type_(),0,internal_format,width,height,depth,0,color,ty,data.as_ptr() as *const c_void);
+        // }
+        unimplemented!()
     }
 
     /// Gets a copy of the data on the GPU.
     pub fn data<T>(&self) -> Vec<T> {
-        let (width,height,depth) = self.dimensions();
-        let color_size           = self.format().color_format().size();
-        let capacity             = width * height * depth * color_size;
-        let mut data : Vec<T>    = Vec::with_capacity(capacity);
-        unsafe {
-            data.set_len(capacity);
-            let (format, type_) = self.texture.format().get_format_and_type();
-
-            gl::ActiveTexture(gl::TEXTURE0);
-            gl::BindTexture(gl::TEXTURE_3D, self.internal());
-            gl::GetTexImage(gl::TEXTURE_3D, 0, format, type_, data.as_mut_ptr() as *mut c_void);
-        }
-        data
+        // let (width,height,depth) = self.dimensions();
+        // let color_size           = self.format().color_format().size();
+        // let capacity             = width * height * depth * color_size;
+        // let mut data : Vec<T>    = Vec::with_capacity(capacity);
+        // unsafe {
+        //     data.set_len(capacity);
+        //     let (format, type_) = self.texture.format().get_format_and_type();
+        //
+        //     gl::ActiveTexture(gl::TEXTURE0);
+        //     gl::BindTexture(gl::TEXTURE_3D, self.internal());
+        //     gl::GetTexImage(gl::TEXTURE_3D, 0, format, type_, data.as_mut_ptr() as *mut c_void);
+        // }
+        // data
+        unimplemented!()
     }
 }

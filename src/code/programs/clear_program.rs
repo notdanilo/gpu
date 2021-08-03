@@ -15,12 +15,12 @@ pub struct ClearProgram {
 }
 
 impl ClearProgram {
-    /// Color buffer bit.
-    pub const COLOR   : u32 = gl::COLOR_BUFFER_BIT;
-    /// Depth buffer bit.
-    pub const DEPTH   : u32 = gl::DEPTH_BUFFER_BIT;
-    /// Stencil buffer bit.
-    pub const STENCIL : u32 = gl::STENCIL_BUFFER_BIT;
+    // /// Color buffer bit.
+    // pub const COLOR   : u32 = gl::COLOR_BUFFER_BIT;
+    // /// Depth buffer bit.
+    // pub const DEPTH   : u32 = gl::DEPTH_BUFFER_BIT;
+    // /// Stencil buffer bit.
+    // pub const STENCIL : u32 = gl::STENCIL_BUFFER_BIT;
 
     /// Creates a new `ClearProgram`.
     pub fn new(context:&Context) -> Self {
@@ -52,12 +52,12 @@ impl ClearProgram {
     /// clear(framebuffer, ClearProgram::COLOR | ClearProgram::DEPTH | ClearProgram::STENCIL)
     /// ```
     pub fn clear(&self, framebuffer:&Framebuffer, clear_mask: u32) {
-        unsafe {
-            framebuffer.bind();
-            gl::ClearColor(self.color.0, self.color.1, self.color.2, self.color.3);
-            gl::ClearDepthf(self.depth);
-            gl::ClearStencil(self.stencil);
-            gl::Clear(clear_mask);
-        }
+        // unsafe {
+        //     framebuffer.bind();
+        //     gl::ClearColor(self.color.0, self.color.1, self.color.2, self.color.3);
+        //     gl::ClearDepthf(self.depth);
+        //     gl::ClearStencil(self.stencil);
+        //     gl::Clear(clear_mask);
+        // }
     }
 }

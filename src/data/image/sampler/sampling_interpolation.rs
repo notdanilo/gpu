@@ -11,10 +11,11 @@ pub enum Interpolation {
 
 impl Interpolation {
     pub(crate) fn get_internal(&self) -> i32 {
-        match self {
-            Self::Nearest => gl::NEAREST as i32,
-            Self::Linear  => gl::LINEAR as i32
-        }
+    //     match self {
+    //         Self::Nearest => gl::NEAREST as i32,
+    //         Self::Linear  => gl::LINEAR as i32
+    //     }
+        unimplemented!()
     }
 }
 

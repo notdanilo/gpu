@@ -37,11 +37,12 @@ impl ColorFormat {
 
     /// Gets `OpenGL` internal enumeration.
     pub fn get_format(&self) -> u32 {
-        match self {
-            ColorFormat::R    => gl::RED,
-            ColorFormat::RG   => gl::RG,
-            ColorFormat::RGB  => gl::RGB,
-            ColorFormat::RGBA => gl::RGBA
-        }
+        // match self {
+        //     ColorFormat::R    => gl::RED,
+        //     ColorFormat::RG   => gl::RG,
+        //     ColorFormat::RGB  => gl::RGB,
+        //     ColorFormat::RGBA => gl::RGBA
+        // }
+        unimplemented!()
     }
 }

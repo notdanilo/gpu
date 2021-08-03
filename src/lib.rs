@@ -12,7 +12,6 @@
 //FIXME: We need to type the same documentation for every Context implementation. Maybe we should
 //create a documented trait for it and implement the trait for each backend.
 #![warn(missing_docs)]
-#![warn(trivial_casts)]
 #![warn(trivial_numeric_casts)]
 #![warn(unused_import_braces)]
 #![warn(unused_qualifications)]
@@ -22,9 +21,7 @@ mod prelude;
 mod context;
 mod data;
 mod code;
-mod window;
 
 pub use data::*;
 pub use code::*;
 pub use context::*;
-pub use window::*;

@@ -20,22 +20,23 @@ pub struct Sampler {
 impl Sampler {
     /// Creates a new `Sampler` with default wrapping as `REPEAT` and filtering as `NEAREST`.
     pub fn new(context:&Context, image: &Image, sampling_wrapping: SamplingWrapping, sampling_interpolation: SamplingInterpolation) -> Self {
-        let (minification, magnification) = sampling_interpolation.get_internal_minification_magnification();
-        let (x_wrapping, y_wrapping, z_wrapping) = sampling_wrapping.get_internal();
-        let image = image.clone();
-
-        let gl = context.gl_context();
-        let resource = unsafe {
-            let mut resource = 0;
-            gl::CreateSamplers(1, &mut resource);
-            gl::SamplerParameteri(resource, gl::TEXTURE_WRAP_S, x_wrapping);
-            gl::SamplerParameteri(resource, gl::TEXTURE_WRAP_T, y_wrapping);
-            gl::SamplerParameteri(resource, gl::TEXTURE_WRAP_R, z_wrapping);
-            gl::SamplerParameteri(resource, gl::TEXTURE_MIN_FILTER, minification);
-            gl::SamplerParameteri(resource, gl::TEXTURE_MAG_FILTER, magnification);
-            resource
-        };
-        Self { _gl: gl, resource, sampling_interpolation, sampling_wrapping, image }
+        // let (minification, magnification) = sampling_interpolation.get_internal_minification_magnification();
+        // let (x_wrapping, y_wrapping, z_wrapping) = sampling_wrapping.get_internal();
+        // let image = image.clone();
+        //
+        // let gl = context.gl_context();
+        // let resource = unsafe {
+        //     let mut resource = 0;
+        //     gl::CreateSamplers(1, &mut resource);
+        //     gl::SamplerParameteri(resource, gl::TEXTURE_WRAP_S, x_wrapping);
+        //     gl::SamplerParameteri(resource, gl::TEXTURE_WRAP_T, y_wrapping);
+        //     gl::SamplerParameteri(resource, gl::TEXTURE_WRAP_R, z_wrapping);
+        //     gl::SamplerParameteri(resource, gl::TEXTURE_MIN_FILTER, minification);
+        //     gl::SamplerParameteri(resource, gl::TEXTURE_MAG_FILTER, magnification);
+        //     resource
+        // };
+        // Self { _gl: gl, resource, sampling_interpolation, sampling_wrapping, image }
+        unimplemented!()
     }
 
     /// Gets `SamplingWrapping`.
@@ -56,8 +57,9 @@ impl Sampler {
 
 impl Drop for Sampler {
     fn drop(&mut self) {
-        unsafe {
-            gl::DeleteSamplers(1, &self.internal());
-        }
+        // unsafe {
+        //     gl::DeleteSamplers(1, &self.internal());
+        // }
+        unimplemented!()
     }
 }
