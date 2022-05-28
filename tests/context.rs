@@ -3,7 +3,7 @@ mod utils;
 #[cfg(test)]
 mod context {
     use super::utils::test;
-    use gpu::ContextBuilder;
+    use gpu::{ContextBuilder, Window};
     use gpu::ContextDisplay;
 
 
@@ -17,7 +17,9 @@ mod context {
 
     #[test]
     fn present_context() {
-        let context_builder = ContextBuilder::new().with_display(ContextDisplay::Window(String::from("present_context (black)"), 320, 240));
+        let window = Window::new("present_context (black)".into(), (320, 240));
+        let display = ContextDisplay::Window(window);
+        let context_builder = ContextBuilder::new().with_display(display);
         let context = context_builder.build();
 
         context.make_current().expect("Couldn't make current");

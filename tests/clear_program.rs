@@ -3,7 +3,7 @@ mod utils;
 #[cfg(test)]
 mod clear_program {
     use super::utils::test;
-    use gpu::ContextBuilder;
+    use gpu::{ContextBuilder, Window};
     use gpu::ContextDisplay;
     use gpu::ClearProgram;
     use gpu::Framebuffer;
@@ -12,9 +12,9 @@ mod clear_program {
     #[test]
     fn clear_display() {
         let dimension = (320, 240);
-
-        let context_builder = ContextBuilder::new().with_display(ContextDisplay::Window
-            (String::from("clear_display (green)"), dimension.0, dimension.1));
+        let window = Window::new("clear_display (green)".into(), dimension);
+        let display = ContextDisplay::Window(window);
+        let context_builder = ContextBuilder::new().with_display(display);
         let context = context_builder.build();
 
         context.make_current().expect("Couldn't make current");

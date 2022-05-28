@@ -4,7 +4,7 @@ mod utils;
 mod clear_program {
     use super::utils::test;
 
-    use gpu::ContextBuilder;
+    use gpu::{ContextBuilder, Window};
     use gpu::ContextDisplay;
     use gpu::Framebuffer;
     use gpu::VertexShader;
@@ -20,8 +20,9 @@ mod clear_program {
     fn draw_to_display() {
         let components = 3;
         let dimension = (320, 240);
-
-        let context_builder = ContextBuilder::new().with_display(ContextDisplay::Window(String::from("draw_to_display (red)"), dimension.0, dimension.1));
+        let window = Window::new("draw_to_display (red)".into(), dimension);
+        let display = ContextDisplay::Window(window);
+        let context_builder = ContextBuilder::new().with_display(display);
         let context = context_builder.build();
 
         context.make_current().unwrap();
@@ -43,7 +44,7 @@ mod clear_program {
             }
         "#).unwrap();
 
-        let raster_program = RasterProgram::new(&context, &fragment_shader, &vertex_shader)
+        let raster_program = RasterProgram::new(&context, &vertex_shader, &fragment_shader)
             .unwrap();
 
         let framebuffer = Framebuffer::default(&context);
@@ -116,7 +117,7 @@ mod clear_program {
             }
         "#).unwrap();
 
-        let raster_program = RasterProgram::new(&context, &fragment_shader, &vertex_shader)
+        let raster_program = RasterProgram::new(&context, &vertex_shader, &fragment_shader)
             .unwrap();
 
         let components = 4;
