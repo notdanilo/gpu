@@ -64,10 +64,10 @@ impl Image2D {
         self.dimensions = dimensions;
         self.format     = format.clone();
         unsafe {
-            let (color, ty)     = data_format.get_format_and_type();
-            let width           = dimensions.0 as i32;
-            let height          = dimensions.1 as i32;
-            gl::TextureSubImage2D(self.internal(),0,0,0,width,height,color,ty,data.as_ptr() as *const std::ffi::c_void);
+            let (color, ty) = data_format.get_format_and_type();
+            let width= dimensions.0 as i32;
+            let height= dimensions.1 as i32;
+            gl::TextureSubImage2D(self.internal(), 0, 0, 0, width, height, color, ty, data.as_ptr() as *const std::ffi::c_void);
         }
     }
 

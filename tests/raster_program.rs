@@ -2,6 +2,8 @@ mod utils;
 
 #[cfg(test)]
 mod clear_program {
+    use std::ffi::c_void;
+    use std::{thread, time};
     use super::utils::test;
 
     use gpu::{ContextBuilder, Window};
@@ -72,23 +74,23 @@ mod clear_program {
         }
 
         // Wrap this functionality somewhere in the API?
-//        unsafe {
-//            gl::NamedFramebufferReadBuffer(0, gl::BACK);
-//            gl::ReadPixels(0, 0, dimension.0 as i32, dimension.1 as i32, gl::RGB, gl::UNSIGNED_BYTE, data_out.as_mut_ptr() as *mut c_void);
-//            assert_eq!(gl::GetError(), 0);
-//        }
-//        assert_eq!(expected_data, data_out);
+       unsafe {
+           gl::NamedFramebufferReadBuffer(0, gl::BACK);
+           gl::ReadPixels(0, 0, dimension.0 as i32, dimension.1 as i32, gl::RGB, gl::UNSIGNED_BYTE, data_out.as_mut_ptr() as *mut c_void);
+           assert_eq!(gl::GetError(), 0);
+       }
+       assert_eq!(expected_data, data_out);
 
         context.swap_buffers().unwrap();
 
-//        thread::sleep(time::Duration::from_millis(1000));
-//
-//        unsafe {
-//            gl::NamedFramebufferReadBuffer(0, gl::FRONT);
-//            gl::ReadPixels(0, 0, dimension.0 as i32, dimension.1 as i32, gl::RGB, gl::UNSIGNED_BYTE, data_out.as_mut_ptr() as *mut c_void);
-//            assert_eq!(gl::GetError(), 0);
-//        }
-//        assert_eq!(expected_data, data_out);
+       thread::sleep(time::Duration::from_millis(1000));
+
+       unsafe {
+           gl::NamedFramebufferReadBuffer(0, gl::FRONT);
+           gl::ReadPixels(0, 0, dimension.0 as i32, dimension.1 as i32, gl::RGB, gl::UNSIGNED_BYTE, data_out.as_mut_ptr() as *mut c_void);
+           assert_eq!(gl::GetError(), 0);
+       }
+       assert_eq!(expected_data, data_out);
     }
 
     #[test]
